@@ -255,7 +255,6 @@ export default function Sidebar({ width, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { theme } = useTheme();
 
-  // Application menu group
   const applicationMenuData: MenuItem[] = useMemo(() => [
     {
       title: "Dashboard",
@@ -264,17 +263,6 @@ export default function Sidebar({ width, onClose }: SidebarProps) {
       subMenu: [
         { title: "HQ Dashboard", link: "/dashboard/hq-dashboard" },
         { title: "Branch Dashboard", link: "/dashboard/branch-dashboard" },
-      ],
-    },
-    {
-      title: "Sales",
-      icon: <IconSales />,
-      link: "#",
-      subMenu: [
-        { title: "POS, KDS, Checkout", link: "/sales/pos" },
-        { title: "Live Orders", link: "/sales/live-orders" },
-        { title: "Order History", link: "/sales/order-history" },
-        { title: "Reports", link: "/sales/sales-reports" },
       ],
     },
     {
@@ -289,161 +277,20 @@ export default function Sidebar({ width, onClose }: SidebarProps) {
       ],
     },
     {
-      title: "Loyalty Program",
-      icon: <IconLoyalty />,
+      title: "Sales",
+      icon: <IconSales />,
       link: "#",
       subMenu: [
-        { title: "Overview", link: "/loyalty-program/overview" },
-        { title: "Members", link: "/loyalty-program/members" },
-        { title: "Rewards", link: "/loyalty-program/rewards" },
-        { title: "Settings", link: "/loyalty-program/settings" },
-        { title: "Reports", link: "/loyalty-program/loyalty-reports" },
-      ],
-    },
-    {
-      title: "Inventory",
-      icon: <IconInventory />,
-      link: "/inventory",
-      subMenu: [
-        { title: "Stock Overview", link: "/inventory/stock-overview" },
-        { title: "Ingredient Items", link: "/inventory/ingredient-items" },
-        { title: "Stock Request", link: "/inventory/stock-request" },
-        { title: "Stock Transfer Out", link: "/inventory/stock-transfer-out" },
-        { title: "Stock Transfer In", link: "/inventory/stock-transfer-in" },
-        { title: "Stock Transfer Logs", link: "/inventory/stock-transfer-logs" },
-        { title: "Reports", link: "/inventory/inventory-reports" },
-      ],
-    },
-    {
-      title: "Waste Management",
-      icon: <IconWaste />,
-      link: "/waste-management",
-      subMenu: [
-        { title: "Overview", link: "/waste-management/overview" },
-        { title: "Waste Logging", link: "/waste-management/waste-logging" },
-        { title: "Reports", link: "/waste-management/wastage-reports" },
-      ],
-    },
-    {
-      title: "Purchasing",
-      icon: <IconPurchasing />,
-      link: "/purchasing",
-      subMenu: [
-        { title: "Purchase Orders", link: "/purchasing/purchase-orders" },
-        { title: "Suppliers", link: "/purchasing/suppliers" },
-        { title: "Reports", link: "/purchasing/purchasing-reports" },
-      ],
-    },
-    {
-      title: "Admin Settings",
-      icon: <IconSettings />,
-      link: "#",
-      subMenu: [
-        { title: "Organization", link: "/admin-settings/organization" },
-        { title: "Users", link: "/admin-settings/users" },
-        { title: "Roles & Permissions", link: "/admin-settings/roles-permissions" },
-        { title: "POS & Devices", link: "/admin-settings/pos-devices" },
-        { title: "Tax & Service Charges", link: "/admin-settings/tax-service-charges" },
-        { title: "System Preferences", link: "/admin-settings/system-preferences" },
-        { title: "Backup & Restore", link: "/admin-settings/backup-restore" },
-        { title: "System Logs", link: "/admin-settings/system-logs" },
+        { title: "POS, KDS, Checkout", link: "/sales/pos" },
+        { title: "Live Orders", link: "/sales/live-orders" },
+        { title: "Order History", link: "/sales/order-history" },
+        { title: "Reports", link: "/sales/sales-reports" },
       ],
     },
   ], []);
   
-  // UI & Pages menu group
-  const uiPagesMenuData: MenuItem[] = useMemo(() => [
-    {
-      title: "UI Components",
-      icon: <IconUI />,
-      link: "/ui-components",
-      subMenu: [
-        { title: "Alert Dialog", link: "/ui-components/alert-dialog" },
-        { title: "Avatar", link: "/ui-components/avatar" },
-        { title: "Badge", link: "/ui-components/badge" },
-        { title: "Button", link: "/ui-components/button" },
-        { title: "Callout", link: "/ui-components/callout" },
-        { title: "Card", link: "/ui-components/card" },
-        { title: "Checkbox", link: "/ui-components/checkbox-element" },
-        { title: "Checkbox Group", link: "/ui-components/checkbox-group" },
-        { title: "Checkbox Cards", link: "/ui-components/checkbox-cards" },
-        { title: "Data List", link: "/ui-components/data-list" },
-        { title: "Dialog", link: "/ui-components/dialog" },
-        { title: "Dropdown Menu", link: "/ui-components/dropdown-menu" },
-        { title: "Hover Card", link: "/ui-components/hover-card" },
-        { title: "Icon Button", link: "/ui-components/icon-button" },
-        { title: "Popover", link: "/ui-components/popover" },
-        { title: "Progress", link: "/ui-components/progress" },
-        { title: "Radio", link: "/ui-components/radio-button" },
-        { title: "Radio Group", link: "/ui-components/radio-group" },
-        { title: "Radio Cards", link: "/ui-components/radio-cards" },
-        { title: "Scroll Area", link: "/ui-components/scroll-area" },
-        { title: "Segmented Control", link: "/ui-components/segmented-control" },
-        { title: "Select", link: "/ui-components/select" },
-        { title: "Separator", link: "/ui-components/separator" },
-        { title: "Skeleton", link: "/ui-components/skeleton" },
-        { title: "Slider", link: "/ui-components/slider" },
-        { title: "Spinner", link: "/ui-components/spinner" },
-        { title: "Switch", link: "/ui-components/switch" },
-        { title: "Table", link: "/ui-components/table" },
-        { title: "Tabs", link: "/ui-components/tabs" },
-        { title: "TabNav", link: "/ui-components/tabnav" },
-        { title: "TextArea", link: "/ui-components/textarea" },
-        { title: "TextField", link: "/ui-components/textfield" },
-        { title: "Tooltip", link: "/ui-components/tooltip" },
-      ],
-    },
-    {
-      title: "Pages",
-      icon: <IconPages />,
-      link: "#",
-      subMenu: [
-        { 
-          title: "Login", 
-          link: "/auth/login",
-          target: "_blank" 
-        },
-        {
-          title: "Forgot Password",
-          link: "/auth/forgot-password",
-          target: "_blank"
-        },
-        {
-          title: "Reset Password",
-          link: "/auth/reset-password?token=sample-token",
-          target: "_blank"
-        },
-      ],
-    },
-    {
-      title: "Three-Level Menu",
-      icon: <IconMenuLevel />,
-      subMenu: [
-        {
-          title: "Submenu Item 1",
-          subMenu: [
-            { title: "Submenu Item 1.1", link: "/submenu1/item1" },
-            { title: "Submenu Item 1.2", link: "/submenu1/item2" },
-          ],
-        },
-        { title: "Submenu Item 2", link: "/submenu2" },
-      ],
-    },
-  ], []);
-
-  // Documentation menu group
-  const documentationMenuData: MenuItem[] = useMemo(() => [
-    {
-      title: "Documentation",
-      icon: <IconDocs />,
-      link: "/docs",
-    },
-    {
-      title: "Support",
-      icon: <IconSupport />,
-      link: "http://eatlypos.com/support",
-    },
-  ], []);
+  const uiPagesMenuData: MenuItem[] = useMemo(() => [], []);
+  const documentationMenuData: MenuItem[] = useMemo(() => [], []);
 
   // Find active menu items based on current path and open parent menus
   useEffect(() => {
@@ -529,12 +376,12 @@ export default function Sidebar({ width, onClose }: SidebarProps) {
         width: width
       }}
     >
-      <Flex gap="3" justify="between" align="center" px="2" py="5">
-        <Box px="4">
+      <Flex justify="between" align="center" px="2" py="5">
+        <Flex justify="center" className="flex-1">
           <Link href="/">
-            <Image src={theme === 'dark' ? '/images/logo-dark.png' : '/images/logo.png'} alt="Logo" width={130} height={20} />
+            <Image src={'/images/logo.png'} alt="Logo" width={130} height={20} />
           </Link>
-        </Box>
+        </Flex>
         <div className="lg:hidden">
           <IconButton variant="ghost" color="gray" onClick={onClose}>
             <X />
@@ -556,32 +403,7 @@ export default function Sidebar({ width, onClose }: SidebarProps) {
               onClose={onClose}
             />
             
-            {/* UI & Pages Menu Group */}
-            <MenuGroup 
-              title="UI & Pages" 
-              menuData={uiPagesMenuData} 
-              openMenu={openMenu} 
-              setOpenMenu={setOpenMenu} 
-              openSubMenu={openSubMenu} 
-              setOpenSubMenu={setOpenSubMenu} 
-              isActive={isActive}
-              onClose={onClose}
-            />
-          </Box>
-
-          {/* Resources Menu Group */}
-          <MenuGroup 
-            title="Resources" 
-            menuData={documentationMenuData} 
-            openMenu={openMenu} 
-            setOpenMenu={setOpenMenu} 
-            openSubMenu={openSubMenu} 
-            setOpenSubMenu={setOpenSubMenu} 
-            isActive={isActive}
-            isBottomGroup={true}
-            allExternalLinks={true}
-            onClose={onClose}
-          />
+            </Box>
         </Box>
       </ScrollArea>
     </Box>

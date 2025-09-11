@@ -7,6 +7,7 @@ import { ThemeProvider, useTheme } from "next-themes";
 import { ReactNode, useEffect, useState } from "react";
 import { Theme } from "@radix-ui/themes";
 import { Toaster } from "sonner";
+import NextTopLoader from 'nextjs-toploader';
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
@@ -83,6 +84,7 @@ function RadixThemeWrapper({ children }: { children: ReactNode }) {
       panelBackground="solid"
       appearance={isDarkMode ? 'dark' : 'light'}
     >
+      <NextTopLoader color="var(--accent-9)" showSpinner={false} />
       {children}
     </Theme>
   );

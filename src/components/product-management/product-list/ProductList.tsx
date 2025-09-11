@@ -24,7 +24,7 @@ interface MenuListProps {
   onResetFilters?: () => void;
 }
 
-export default function MenuList({
+export default function ProductList({
   searchTerm,
   onSearchChange,
   filteredMenuItems,
@@ -275,7 +275,7 @@ export default function MenuList({
               </Table.Cell>
               <Table.Cell align="right">
                 <Flex gap="3" justify="end">
-                  <Link href={`/menu-management/menu/${item.id}`}>
+                  <Link href={`/product-management/product-list/${item.id}`}>
                     <IconButton 
                       variant="ghost" 
                       size="1"

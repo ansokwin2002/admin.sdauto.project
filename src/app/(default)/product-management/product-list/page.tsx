@@ -9,8 +9,8 @@ import { useAppOrganization } from '@/contexts/AppOrganizationContext';
 import { menuItems, menuCategories, MenuItem } from '@/data/MenuData';
 import BranchFilterInput from '@/components/common/BranchFilterInput';
 import { organization } from '@/data/CommonData';
-import MenuDashboard from '@/components/menu-management/menu/MenuDashboard';
-import MenuList from '@/components/menu-management/menu/MenuList';
+import ProductDashboard from '@/components/product-management/product-list/ProductDashboard';
+import ProductList from '@/components/product-management/product-list/ProductList';
 import { PageHeading } from '@/components/common/PageHeading';
 import { usePageTitle } from '@/hooks/usePageTitle';
 
@@ -33,7 +33,7 @@ const bestSellingItems = menuItems
   }));
 
 function MenuContent() {
-  usePageTitle('Menu Management');
+  usePageTitle('Product List');
   const router = useRouter();
   const searchParams = useSearchParams();
   const activeTab = searchParams.get('tab') || 'dashboard';
@@ -109,7 +109,7 @@ function MenuContent() {
   }, [searchTerm, activeBranchFilter, categoryFilter, statusFilter, availabilityFilter]);
 
   const handleAddMenuItem = () => {
-    router.push('/menu-management/menu/add');
+    router.push('/product-management/product-list/add');
   };
   
   const handleResetFilters = () => {
@@ -120,7 +120,7 @@ function MenuContent() {
   };
 
   const handleEditItem = (item: MenuItem) => {
-    router.push(`/menu-management/menu/${item.id}`);
+    router.push(`/product-management/product-list/${item.id}`);
   };
 
   const handleDeleteItem = (item: MenuItem) => {
@@ -137,7 +137,7 @@ function MenuContent() {
         gap={{ initial: "4", sm: "0" }}
         mb="5"
       >
-        <PageHeading title="Menu Management" description="Manage your restaurant menu items" noMarginBottom />
+        <PageHeading title="Product List" description="Manage your restaurant menu items" noMarginBottom />
         <Flex 
           direction={{ initial: "column", sm: "row" }} 
           align={{ initial: "stretch", sm: "center" }} 
@@ -168,7 +168,7 @@ function MenuContent() {
           <Box width={{ initial: "full", sm: "auto" }}>
             <Button onClick={handleAddMenuItem} className="w-full sm:w-auto">
               <PlusIcon size={16} />
-              Add Menu Item
+              Add Product
             </Button>
           </Box>
         </Flex>
@@ -185,13 +185,13 @@ function MenuContent() {
           <Tabs.Trigger value="list">
             <Flex gap="2" align="center">
               <List size={16} />
-              <Text>Menu List</Text>
+              <Text>Product List</Text>
             </Flex>
           </Tabs.Trigger>
         </Tabs.List>
         
         <Tabs.Content value="dashboard">
-          <MenuDashboard
+          <ProductDashboard
             menuMetrics={menuMetrics}
             bestSellingItems={bestSellingItems}
             menuItems={menuItems}
@@ -199,7 +199,7 @@ function MenuContent() {
         </Tabs.Content>
         
         <Tabs.Content value="list">
-          <MenuList
+          <ProductList
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
             filteredMenuItems={filteredMenuItems}

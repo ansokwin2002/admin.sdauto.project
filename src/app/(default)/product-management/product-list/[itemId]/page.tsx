@@ -3,13 +3,13 @@
 import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Box, Text } from '@radix-ui/themes';
-import MenuForm from '@/components/menu-management/menu/MenuForm';
+import ProductForm from '@/components/product-management/product-list/ProductForm';
 import { menuItems, MenuItem } from '@/data/MenuData';
 import { toast } from 'sonner';
 import { usePageTitle } from '@/hooks/usePageTitle';
 
 export default function EditMenuItemPage() {
-  usePageTitle('Edit Menu Item');
+  usePageTitle('Edit Product');
   const router = useRouter();
   const params = useParams();
   const itemId = params.itemId as string;
@@ -23,7 +23,7 @@ export default function EditMenuItemPage() {
   }, [itemId]);
 
   const handleBackToList = () => {
-    router.push('/menu-management/menu?tab=list');
+    router.push('/product-management/product-list?tab=list');
   };
 
   const handleSubmitForm = () => {

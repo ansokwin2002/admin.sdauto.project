@@ -1,16 +1,16 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import MenuForm from '@/components/menu-management/menu/MenuForm';
+import ProductForm from '@/components/product-management/product-list/ProductForm';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { toast } from 'sonner';
 
 export default function AddMenuItemPage() {
-  usePageTitle('Add Menu Item');
+  usePageTitle('Add Product');
   const router = useRouter();
 
   const handleBackToList = () => {
-    router.push('/menu-management/menu?tab=list');
+    router.push('/product-management/product-list?tab=list');
   };
 
   const handleSubmitForm = () => {

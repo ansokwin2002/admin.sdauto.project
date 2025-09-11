@@ -259,21 +259,15 @@ export default function Sidebar({ width, onClose }: SidebarProps) {
     {
       title: "Dashboard",
       icon: <IconDashboard />,
-      link: "#",
-      subMenu: [
-        { title: "HQ Dashboard", link: "/dashboard/hq-dashboard" },
-        { title: "Branch Dashboard", link: "/dashboard/branch-dashboard" },
-      ],
+      link: "/dashboard",
     },
     {
-      title: "Menu Management",
+      title: "Product Management",
       icon: <IconMenu />,
       link: "#",
       subMenu: [
-        { title: "Menu", link: "/menu-management/menu" },
-        { title: "Categories", link: "/menu-management/categories" },
-        { title: "Pricing & Availability", link: "/menu-management/branch-pricing-availability" },
-        { title: "Recipes", link: "/menu-management/recipes" },
+        { title: "Product List", link: "/product-management/product-list" },
+        { title: "Categories", link: "/product-management/categories" },
       ],
     },
     {

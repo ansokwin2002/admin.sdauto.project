@@ -8,6 +8,14 @@ const nextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/dashboard',
+        destination: '/dashboard/hq-dashboard',
+      },
+    ]
+  },
 };
 
 export default nextConfig;

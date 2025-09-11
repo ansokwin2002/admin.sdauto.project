@@ -20,7 +20,7 @@ interface MenuDashboardProps {
   menuItems: MenuItem[];
 }
 
-export default function MenuDashboard({ menuMetrics, bestSellingItems, menuItems }: MenuDashboardProps) {
+export default function ProductDashboard({ menuMetrics, bestSellingItems, menuItems }: MenuDashboardProps) {
   return (
     <Box className="mt-6 space-y-6">
       <Grid columns={{ initial: '1', sm: '2', md: '4' }} gap="4">

@@ -100,7 +100,7 @@ const mockMetrics: StockMetrics = {
 };
 
 export default function HQDashboard() {
-  usePageTitle('Headquarters Dashboard')
+  usePageTitle('Dashboard')
   const [isClient, setIsClient] = useState(false);
   const [isRefreshingInventory, setIsRefreshingInventory] = useState(false);
   const [chartsLoading, setChartsLoading] = useState(true);
@@ -138,7 +138,7 @@ export default function HQDashboard() {
   
   return (
     <Box className="space-y-6">
-      <PageHeading title="Headquarters Dashboard" description="Example of HQ dashboard view" />
+      <PageHeading title="Dashboard" description="Example of HQ dashboard view" />
 
       {/* Sales Overview Section */}
       <Box>

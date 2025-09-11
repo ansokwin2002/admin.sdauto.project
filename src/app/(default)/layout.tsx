@@ -10,7 +10,7 @@ import { Text } from "@radix-ui/themes";
 export default function RootLayout({ children }: { children: ReactNode }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const sidebarWidth = '260px';
+  const sidebarWidth = '280px';
   
   const onScroll = useCallback(() => {
     const mainContent = document.querySelector('[data-main-content]');
@@ -44,14 +44,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         {/* Sidebar */}
         <Box 
           style={{ position: 'fixed', zIndex: 20, width: sidebarWidth, height: '100vh' }} 
-          className={`transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-[260px] lg:translate-x-0'}`}
+          className={`transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-[280px] lg:translate-x-0'}`}
         >
           <Sidebar width={sidebarWidth} onClose={() => setIsSidebarOpen(false)} />
         </Box>
         
         {/* Main content area */}
         <Box 
-          className="h-screen overflow-y-auto lg:ml-[260px] lg:w-[calc(100%-260px)] min-w-0"
+          className="h-screen overflow-y-auto lg:ml-[280px] lg:w-[calc(100%-280px)] min-w-0"
           data-main-content
         >
           {/* Top bar */}

@@ -1,0 +1,227 @@
+@supports (color: color-mix(in oklab, white, black)) {
+	:where(.radix-themes) {
+		--base-card-surface-box-shadow: rgba(0, 0, 0, 0.04) 0px 3px 5px;
+		--base-card-classic-box-shadow-inner: 0 0 0 1px var(--slate-a5);
+		--base-card-classic-box-shadow-outer: none;
+	}
+}
+
+[data-radius='medium'] {
+  --radius-factor: 1.25;
+}
+
+.rt-BaseCard {
+  contain: none;
+	overflow: visible;
+}
+
+.rt-Card {
+	--base-card-border-radius: var(--radius-4);
+}
+
+.rt-TextFieldRoot:where(.rt-variant-surface) {
+  box-shadow: inset 0 0 0 var(--text-field-border-width) var(--slate-a5);
+}
+
+.rt-TextAreaRoot:where(.rt-variant-surface) {
+  box-shadow: inset 0 0 0 var(--text-area-border-width) var(--slate-a5);
+}
+
+.rt-SelectTrigger:where(.rt-variant-surface) {
+  box-shadow: inset 0 0 0 1px var(--slate-a5);
+}
+
+@supports (box-shadow: 0 0 0 1px color-mix(in oklab, white, black)) {
+	.rt-TableRoot:where(.rt-variant-surface) {
+			border-color: color-mix(in oklab, var(--slate-a3), var(--slate-4));
+	}
+}
+
+.rt-TableRootTable {
+	--table-row-box-shadow: inset 0 -1px 0 0 var(--slate-a3);
+}
+
+.rt-TableRoot:where(.rt-variant-surface) :where(.rt-TableRootTable) :where(.rt-TableHeader) {
+	--table-row-background-color: var(--slate-2);
+}
+
+.rt-TableColumnHeaderCell {
+  color: var(--slate-10);
+}
+
+.rt-TableRow.align-middle {
+  vertical-align: middle;
+}
+
+.rt-TableCell[valign="middle"] {
+  vertical-align: middle;
+}
+
+.rt-TableRow:last-child .rt-TableCell {
+	box-shadow: none;
+}
+
+:where(.rt-CheckboxCardsRoot.rt-variant-surface) .rt-CheckboxCardsItem,
+:where(.rt-RadioCardsRoot.rt-variant-surface) .rt-RadioCardsItem {
+	box-shadow: inset 0 0 0 1px var(--slate-a5);
+}
+
+.custom-react-select div[class*="-indicatorContainer"] {
+  color: var(--gray-10);
+	align-items: center;
+}
+
+/* Date Range Picker Default Theme */
+.rdrCalendarWrapper {
+	background: white !important;
+	border-radius: 6px !important;
+}
+
+.rdrDefinedRangesWrapper .rdrStaticRangeSelected {
+	color: var(--primary) !important;
+	background-color: var(--primary25) !important;
+}
+
+.rdrSelected, .rdrInRange, .rdrStartEdge, .rdrEndEdge {
+	color: white !important;
+	background-color: var(--primary) !important;
+}
+
+.rdrDayToday .rdrDayNumber span:after {
+	background: var(--primary) !important;
+}
+
+.rdrDateDisplayItemActive {
+	border-color: var(--primary75) !important;
+}
+
+.rdrDayStartPreview, .rdrDayEndPreview, .rdrDayInPreview {
+	color: var(--primary) !important;
+}
+
+/* Date Range Picker Dark Mode */
+.dark .rdrCalendarWrapper {
+  background: var(--slate-3) !important;
+  color: var(--slate-12) !important;
+}
+
+.dark .rdrDateDisplayItem {
+  background-color: var(--slate-3) !important;
+  border-color: var(--slate-6) !important;
+}
+
+.dark .rdrDateDisplayItemActive {
+  border-color: var(--primary75) !important;
+}
+
+.dark .rdrDateDisplayItem input {
+  color: var(--slate-12) !important;
+}
+
+.dark .rdrDayNumber span {
+  color: var(--slate-12) !important;
+}
+
+.dark .rdrDayDisabled .rdrDayNumber span {
+  color: var(--slate-8) !important;
+}
+
+.dark .rdrDayToday .rdrDayNumber span:after {
+  background-color: var(--primary) !important;
+}
+
+.dark .rdrMonthName {
+  color: var(--slate-11) !important;
+}
+
+.dark .rdrMonthAndYearPickers select {
+  color: var(--slate-12) !important;
+  background-color: var(--slate-2) !important;
+}
+
+.dark .rdrMonthAndYearPickers select:hover {
+  background-color: var(--slate-4) !important;
+}
+
+.dark .rdrNextPrevButton {
+  background-color: var(--slate-3) !important;
+}
+
+.dark .rdrNextPrevButton:hover {
+  background-color: var(--slate-4) !important;
+}
+
+.dark .rdrPprevButton i {
+	border-color: transparent var(--slate-10) transparent transparent !important;
+}
+
+.dark .rdrNextButton i {
+  border-color: transparent transparent transparent var(--slate-10) !important;
+}
+
+.dark .rdrWeekDay {
+  color: var(--slate-11) !important;
+}
+
+.dark .rdrDay:not(.rdrDayDisabled):not(.rdrDayPassive) .rdrInRange ~ .rdrDayNumber span,
+.dark .rdrDay:not(.rdrDayDisabled):not(.rdrDayPassive) .rdrStartEdge ~ .rdrDayNumber span,
+.dark .rdrDay:not(.rdrDayDisabled):not(.rdrDayPassive) .rdrEndEdge ~ .rdrDayNumber span,
+.dark .rdrDay:not(.rdrDayDisabled):not(.rdrDayPassive) .rdrSelected ~ .rdrDayNumber span {
+  color: white !important;
+}
+
+.dark .rdrDayStartPreview, .dark .rdrDayInPreview, .dark .rdrDayEndPreview {
+  border-color: var(--primary50) !important;
+}
+
+.dark .rdrStartEdge, .dark .rdrEndEdge {
+  background-color: var(--primary) !important;
+}
+
+.dark .rdrInRange {
+  background-color: var(--primary25) !important;
+}
+
+.dark .rdrDayHovered .rdrDayNumber:after {
+  border-color: var(--primary50) !important;
+}
+
+.dark .rdrDefinedRangesWrapper {
+  background: var(--slate-3) !important;
+  border-color: var(--slate-6) !important;
+}
+
+.dark .rdrStaticRange, .dark .rdrStaticRangeLabel {
+  color: var(--slate-11) !important;
+	background: var(--slate-3) !important;
+	border-color: var(--slate-6) !important;
+}
+
+.dark .rdrStaticRange:hover .rdrStaticRangeLabel,
+.dark .rdrStaticRange:focus .rdrStaticRangeLabel {
+  color: var(--slate-12) !important;
+}
+
+.dark .rdrStaticRange:hover, .dark .rdrStaticRange:focus {
+  background-color: var(--slate-4) !important;
+}
+
+.dark .rdrDateDisplayWrapper {
+	background: var(--slate-3) !important;
+	border-color: var(--slate-6) !important;
+}
+
+.dark .rdrInputRangeInput {
+	border-color: var(--slate-6) !important;
+	color: var(--slate-12) !important;
+}
+
+.dark .rdrDayDisabled {
+  background-color: var(--slate-4) !important;
+}
+
+.dark .rdrStaticRangeSelected .rdrStaticRangeLabel,
+.dark .rdrStaticRangeSelected .rdrStaticRangeLabel:hover {
+	background: var(--primary25) !important;
+	color: var(--primary) !important;
+}

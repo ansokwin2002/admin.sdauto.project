@@ -1,0 +1,217 @@
+import { LoyaltyReward, RewardStatus, RewardType } from "@/types/loyalty";
+import { subDays, addDays } from "date-fns";
+
+export const mockLoyaltyRewards: LoyaltyReward[] = [
+  {
+    id: "REW001",
+    name: "Free Regular Coffee",
+    description: "Enjoy a complimentary regular-sized coffee on us!",
+    type: "Free Item",
+    pointsRequired: 100,
+    status: "Active",
+    imageUrl: "/images/rewards/coffee.jpg",
+    validityStartDate: subDays(new Date(), 30),
+    validityEndDate: addDays(new Date(), 60),
+    applicableTiers: ["tier-silver", "tier-gold", "tier-platinum"], // Corresponds to tier IDs
+    branchScope: "All",
+    maxRedemptions: 1000,
+    redemptionsCount: 150,
+    relatedItemId: "MENU005", // Example Menu Item ID
+  },
+  {
+    id: "REW002",
+    name: "10% Off Next Order",
+    description: "Get 10% discount on your total bill for your next visit.",
+    type: "% Discount",
+    pointsRequired: 150,
+    status: "Active",
+    imageUrl: "/images/rewards/discount.jpg",
+    validityStartDate: new Date(),
+    validityEndDate: addDays(new Date(), 90),
+    applicableTiers: ["tier-gold", "tier-platinum"],
+    branchScope: ["br-1", "br-2"], // Specific branches
+    discountPercentage: 10,
+    redemptionsCount: 85,
+  },
+  {
+    id: "REW003",
+    name: "$5 Cashback",
+    description: "Receive $5 cashback credited to your account.",
+    type: "Cashback",
+    pointsRequired: 250,
+    status: "Active",
+    imageUrl: "/images/rewards/cashback.jpg",
+    validityStartDate: subDays(new Date(), 15),
+    applicableTiers: ["tier-platinum"],
+    branchScope: "All",
+    cashbackAmount: 5,
+    maxRedemptions: 500,
+    redemptionsCount: 42,
+  },
+  {
+    id: "REW004",
+    name: "Free Appetizer",
+    description: "Choose any appetizer from our menu for free.",
+    type: "Free Item",
+    pointsRequired: 200,
+    status: "Inactive",
+    imageUrl: "/images/rewards/appetizer.jpg",
+    validityStartDate: subDays(new Date(), 90),
+    validityEndDate: subDays(new Date(), 1), // Ended yesterday
+    applicableTiers: ["tier-silver", "tier-gold"],
+    branchScope: "All",
+    relatedItemId: "MENU012", // Example Menu Item ID
+    redemptionsCount: 210,
+  },
+  {
+    id: "REW005",
+    name: "Birthday Special: Free Dessert",
+    description: "Celebrate your birthday month with a free dessert!",
+    type: "Free Item",
+    pointsRequired: 50, // Lower points for birthday special
+    status: "Active",
+    imageUrl: "/images/rewards/dessert.jpg",
+    applicableTiers: ["tier-bronze", "tier-silver", "tier-gold", "tier-platinum"],
+    branchScope: "All",
+    relatedItemId: "MENU025", // Example Menu Item ID
+    // No specific validity dates, maybe handled by logic (e.g., only redeemable in birth month)
+  },
+   {
+    id: "REW006",
+    name: "20% Off Weekday Lunch",
+    description: "Enjoy 20% discount on lunch orders (Mon-Fri, 11 AM - 2 PM).",
+    type: "% Discount",
+    pointsRequired: 180,
+    status: "Draft", // Not yet published
+    imageUrl: "/images/rewards/lunch.jpg",
+    applicableTiers: ["tier-gold", "tier-platinum"],
+    branchScope: ["br-2"], // Only one branch
+    discountPercentage: 20,
+  },
+  {
+    id: "REW007",
+    name: "Expired $2 Cashback",
+    description: "Past $2 cashback offer.",
+    type: "Cashback",
+    pointsRequired: 120,
+    status: "Expired",
+    imageUrl: "/images/rewards/expired-cashback.jpg",
+    validityStartDate: subDays(new Date(), 120),
+    validityEndDate: subDays(new Date(), 30), // Expired a month ago
+    applicableTiers: ["tier-silver"],
+    branchScope: "All",
+    cashbackAmount: 2,
+    redemptionsCount: 300,
+  },
+  {
+    id: "REW008",
+    name: "Free Drink Upgrade",
+    description: "Upgrade your drink size for free.",
+    type: "Free Item", // Could also be a discount variant
+    pointsRequired: 75,
+    status: "Active",
+    imageUrl: "/images/rewards/drink-upgrade.jpg",
+    applicableTiers: ["tier-bronze", "tier-silver"],
+    branchScope: "All",
+    relatedItemId: "UPGRADE-DRINK", // Example ID
+    redemptionsCount: 550,
+  },
+  {
+    id: "REW009",
+    name: "15% Off Dinner (Weekends)",
+    description: "Get 15% off your dinner bill on Saturday or Sunday.",
+    type: "% Discount",
+    pointsRequired: 220,
+    status: "Active",
+    imageUrl: "/images/rewards/dinner.jpg",
+    validityStartDate: subDays(new Date(), 10),
+    validityEndDate: addDays(new Date(), 120),
+    applicableTiers: ["tier-gold", "tier-platinum"],
+    branchScope: "All",
+    discountPercentage: 15,
+    redemptionsCount: 30,
+  },
+  {
+    id: "REW010",
+    name: "$10 Welcome Cashback",
+    description: "Welcome bonus for new Platinum members.",
+    type: "Cashback",
+    pointsRequired: 10, // Very low points, intended as a welcome gift
+    status: "Active",
+    imageUrl: "/images/rewards/welcome.jpg",
+    applicableTiers: ["tier-platinum"], // Only for new Platinum
+    branchScope: "All",
+    cashbackAmount: 10,
+    maxRedemptions: 1, // Typically only redeemable once per user
+    redemptionsCount: 15, // Example count
+  },
+  {
+    id: "REW011",
+    name: "Draft: Free Side Dish",
+    description: "Draft reward for a free side dish.",
+    type: "Free Item",
+    pointsRequired: 120,
+    status: "Draft",
+    imageUrl: "",
+    applicableTiers: ["tier-silver", "tier-gold"],
+    branchScope: ["br-1"],
+    relatedItemId: "MENU-SIDE03",
+  },
+  {
+    id: "REW012",
+    name: "Seasonal: 5% Off Festive Menu",
+    description: "Enjoy 5% off our special festive menu items.",
+    type: "% Discount",
+    pointsRequired: 90,
+    status: "Active",
+    imageUrl: "",
+    validityStartDate: new Date(), // Assume starts now
+    validityEndDate: addDays(new Date(), 45), // Ends in 45 days
+    applicableTiers: ["tier-bronze", "tier-silver", "tier-gold"],
+    branchScope: "All",
+    discountPercentage: 5,
+    redemptionsCount: 77,
+  },
+  {
+    id: "REW013",
+    name: "Free Delivery (Min $50)",
+    description: "Free delivery for orders over $50.",
+    type: "Free Item", // Represents a service cost waiver
+    pointsRequired: 150,
+    status: "Active",
+    imageUrl: "",
+    applicableTiers: ["tier-gold", "tier-platinum"],
+    branchScope: ["br-1", "br-2"],
+    relatedItemId: "DELIVERY-FEE-WAIVER", // Example
+    redemptionsCount: 112,
+  },
+  {
+    id: "REW014",
+    name: "Inactive: Old $3 Cashback",
+    description: "An older cashback offer that is now inactive.",
+    type: "Cashback",
+    pointsRequired: 160,
+    status: "Inactive",
+    imageUrl: "",
+    validityStartDate: subDays(new Date(), 200),
+    validityEndDate: subDays(new Date(), 50),
+    applicableTiers: ["tier-silver"],
+    branchScope: "All",
+    cashbackAmount: 3,
+    redemptionsCount: 410,
+  },
+  {
+    id: "REW015",
+    name: "Platinum Exclusive: 25% Off",
+    description: "Exclusive 25% discount for Platinum members on their anniversary.",
+    type: "% Discount",
+    pointsRequired: 300,
+    status: "Active",
+    imageUrl: "",
+    // No specific dates, likely triggered by member anniversary
+    applicableTiers: ["tier-platinum"],
+    branchScope: "All",
+    discountPercentage: 25,
+    redemptionsCount: 8,
+  },
+];

@@ -66,7 +66,7 @@ export default function TopBar({ isScrolled, onMenuClick }: TopBarProps) {
         borderBottomColor: 'var(--slate-4)',
       }}
     >
-      <Box className="w-full px-4 py-3 max-w-[1200px] mx-auto">
+      <Box className="w-full px-4 py-3">
         <Flex justify="between" align="center" gap="4">
           <div className="lg:hidden">
             <IconButton variant="ghost" color="gray" onClick={onMenuClick}>

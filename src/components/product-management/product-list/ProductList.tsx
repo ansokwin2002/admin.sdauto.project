@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Table, Text, Badge, TextField, Select, IconButton } from '@radix-ui/themes';
+import { Box, Button, Flex, Table, Text, Badge, TextField, Select, IconButton, Checkbox } from '@radix-ui/themes';
 import { Search, AlertCircle, RefreshCcw, Utensils, Edit, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import Pagination from '@/components/common/Pagination';
@@ -68,10 +68,20 @@ export default function ProductList({
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<Product | null>(null);
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ 
     key: 'created_at', 
     direction: 'desc' 
   });
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allIds = displayData.map(item => item.id);
+      setSelectedProductIds(allIds);
+    } else {
+      setSelectedProductIds([]);
+    }
+  };
 
   // Debounce search term to avoid too many API calls
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
@@ -255,11 +265,15 @@ export default function ProductList({
     setDeleteConfirmOpen(true);
   };
 
+  const handleDeleteSelected = () => {
+    setItemToDelete(null); // Indicate multiple deletion
+    setDeleteConfirmOpen(true);
+  };
+
   const handleConfirmDelete = () => {
     if (itemToDelete) {
-      // TODO: Implement actual delete API call
+      // Single item deletion logic
       console.log('Delete item:', itemToDelete);
-      
       // After successful deletion, invalidate cache for current filter
       setProductCache(prevCache => {
         const newCache = new Map(prevCache);
@@ -276,8 +290,34 @@ export default function ProductList({
       fetchProducts(currentApiCacheKey);
       
       setItemToDelete(null);
+    } else if (selectedProductIds.length > 0) {
+      // Multiple items deletion logic
+      console.log('Delete selected items:', selectedProductIds);
+      // TODO: Implement actual multiple delete API call
+      // After successful deletion, invalidate cache for current filter
+      setProductCache(prevCache => {
+        const newCache = new Map(prevCache);
+        newCache.delete(currentApiCacheKey);
+        return newCache;
+      });
+      setMetaCache(prevMetaCache => {
+        const newMetaCache = new Map(prevMetaCache);
+        newMetaCache.delete(currentApiCacheKey);
+        return newMetaCache;
+      });
+      
+      // Re-fetch current page
+      fetchProducts(currentApiCacheKey);
+      
+      setSelectedProductIds([]); // Clear selected items
     }
     setDeleteConfirmOpen(false);
+  };
+
+  const handleSelectItem = (id: string, checked: boolean) => {
+    setSelectedProductIds(prev =>
+      checked ? [...prev, id] : prev.filter(productId => productId !== id)
+    );
   };
 
   // Clear cache when filters reset
@@ -335,6 +375,17 @@ export default function ProductList({
           <RefreshCcw size={16} />
           Reset Filters
         </Button>
+
+        <Button
+          variant="soft"
+          color="red"
+          onClick={handleDeleteSelected}
+          className="flex-shrink-0"
+          disabled={selectedProductIds.length === 0}
+        >
+          <Trash2 size={16} />
+          Delete Selected ({selectedProductIds.length})
+        </Button>
       </Flex>
       
       {shouldShowLoading ? (
@@ -358,6 +409,14 @@ export default function ProductList({
           <Table.Root variant="surface">
             <Table.Header>
               <Table.Row>
+                <Table.ColumnHeaderCell width="40px">
+                  <Checkbox
+                    checked={selectedProductIds.length === displayData.length && displayData.length > 0}
+                    onCheckedChange={handleSelectAll}
+                  />
+                </Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>ID</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Image</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>
                   <SortableHeader label="Product Name" sortKey="name" currentSort={sortConfig} onSort={handleSort} />
                 </Table.ColumnHeaderCell>
@@ -385,21 +444,32 @@ export default function ProductList({
             <Table.Body>
               {displayData.map((item) => (
                 <Table.Row key={item.id} className="cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-800">
-                  <Table.Cell>
-                    <Flex align="center" gap="2">
+                  <Table.Cell> {/* Checkbox for individual item */}
+                    <Checkbox
+                      checked={selectedProductIds.includes(item.id)}
+                      onCheckedChange={(checked) => handleSelectItem(item.id, checked)}
+                    />
+                  </Table.Cell>
+                  <Table.Cell>{item.id}</Table.Cell> {/* Product ID */}
+                  <Table.Cell> {/* Image Cell */}
+                    <Flex align="center" justify="center" className="w-8 h-8">
                       {item.primary_image ? (
                         <Image
                           src={item.primary_image} 
                           alt={item.name} 
                           width={32} 
                           height={32}
-                          className="rounded object-cover w-5 h-5"
+                          className="rounded object-cover w-full h-full"
                         />
                       ) : (
-                        <Flex align="center" justify="center" className="w-5 h-5 rounded bg-slate-200 dark:bg-neutral-600">
-                          <Utensils size={12} className="text-gray-500 dark:text-gray-300" />
+                        <Flex align="center" justify="center" className="w-full h-full rounded bg-slate-200 dark:bg-neutral-600">
+                          <Utensils size={16} className="text-gray-500 dark:text-gray-300" />
                         </Flex>
                       )}
+                    </Flex>
+                  </Table.Cell>
+                  <Table.Cell> {/* Original Product Name Cell, now without image */}
+                    <Flex align="center" gap="2">
                       {item.is_low_stock && <AlertCircle size={16} className="text-amber-500" />}
                       {item.name}
                     </Flex>
@@ -468,8 +538,11 @@ export default function ProductList({
         open={deleteConfirmOpen}
         onOpenChange={setDeleteConfirmOpen}
         onConfirm={handleConfirmDelete}
-        title="Delete Product"
-        description={`Are you sure you want to delete "${itemToDelete?.name}"? This action cannot be undone.`}
+        title={itemToDelete ? "Delete Product" : "Delete Selected Products"}
+        description={itemToDelete
+          ? `Are you sure you want to delete "${itemToDelete.name}"? This action cannot be undone.`
+          : `Are you sure you want to delete ${selectedProductIds.length} selected products? This action cannot be undone.`
+        }
         confirmText="Delete"
         cancelText="Cancel"
         color="red"

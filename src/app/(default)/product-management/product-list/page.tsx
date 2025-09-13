@@ -60,7 +60,12 @@ function MenuContent() {
     Object.entries(product).forEach(([key, value]) => {
       if (key === 'is_active') {
         formData.append(key, value ? '1' : '0');
-      } else if (key !== 'images' && key !== 'image_urls' && key !== 'videos') {
+      } else if (key === 'category') {
+        if (value !== '' && value !== null && value !== undefined) {
+          formData.append(key, value as string);
+        }
+      }
+      else if (key !== 'images' && key !== 'image_urls' && key !== 'videos') {
         formData.append(key, value as string);
       }
     });
@@ -104,7 +109,7 @@ function MenuContent() {
       }
 
       const result = await response.json();
-      toast.success(result.message || 'Product added successfully!');
+      toast.success(result.message || 'Product added successfully!', { duration: Infinity, closeButton: true });
       setAddModalOpen(false);
       setRefreshKey(prevKey => prevKey + 1);
     } catch (error) {

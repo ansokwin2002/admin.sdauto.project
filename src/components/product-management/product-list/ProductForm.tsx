@@ -213,11 +213,12 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: ProductF
               <Flex direction="column" gap="1">
                 <Text as="label" size="2" weight="medium">Category</Text>
                 <Select.Root
-                  value={formData.category}
+                  value={formData.category || ''}
                   onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
                 >
                   <Select.Trigger placeholder="Select Category" />
                   <Select.Content>
+                    <Select.Item value={null}>Select Category</Select.Item>
                     {/* Replace with actual categories from your API or data source */}
                     <Select.Item value="electronics">Electronics</Select.Item>
                     <Select.Item value="clothing">Clothing</Select.Item>

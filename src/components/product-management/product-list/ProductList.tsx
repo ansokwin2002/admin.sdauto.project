@@ -14,6 +14,7 @@ import { Autoplay, Pagination as SwiperPagination, Navigation } from 'swiper/mod
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
+import { toast } from 'sonner';
 
 interface MenuListProps {
   searchTerm: string;
@@ -85,7 +86,7 @@ export default function ProductList({
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      const allIds = displayData.map(item => item.id);
+      const allIds = filteredProducts.map(item => item.id);
       setSelectedProductIds(allIds);
     } else {
       setSelectedProductIds([]);
@@ -290,10 +291,23 @@ export default function ProductList({
     setDeleteConfirmOpen(true);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (itemToDelete) {
       // Single item deletion logic
-      console.log('Delete item:', itemToDelete);
+      try {
+        NProgress.start();
+        const response = await fetch(`${API_BASE_URL}/products/${itemToDelete.id}`, {
+          method: 'DELETE',
+        });
+        if (!response.ok) {
+          throw new Error('Failed to delete product');
+        }
+        toast.success('Product deleted successfully!', { duration: Infinity, closeButton: true });
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'An unknown error occurred', { duration: Infinity, closeButton: true });
+      } finally {
+        NProgress.done();
+      }
       // After successful deletion, invalidate cache for current filter
       setProductCache(prevCache => {
         const newCache = new Map(prevCache);
@@ -312,8 +326,26 @@ export default function ProductList({
       setItemToDelete(null);
     } else if (selectedProductIds.length > 0) {
       // Multiple items deletion logic
-      console.log('Delete selected items:', selectedProductIds);
-      // TODO: Implement actual multiple delete API call
+      try {
+        NProgress.start();
+        const response = await fetch(`${API_BASE_URL}/products/bulk`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ product_ids: selectedProductIds, action: 'delete' }),
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          const errorMessage = errorData.message || 'Failed to delete selected products';
+          throw new Error(errorMessage);
+        }
+        toast.success('Selected products deleted successfully!', { duration: Infinity, closeButton: true });
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'An unknown error occurred', { duration: Infinity, closeButton: true });
+      } finally {
+        NProgress.done();
+      }
       // After successful deletion, invalidate cache for current filter
       setProductCache(prevCache => {
         const newCache = new Map(prevCache);

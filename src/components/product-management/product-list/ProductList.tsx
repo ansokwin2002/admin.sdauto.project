@@ -499,7 +499,7 @@ export default function ProductList({
             <Table.Body>
               {displayData.map((item) => (
                 <tr key={item.id} className="rt-TableRow cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-800" onClick={() => handleRowClick(item)}>
-                  <td className="rt-TableCell">
+                  <td className="rt-TableCell" onClick={(e) => e.stopPropagation()}>
                     <Checkbox
                       checked={selectedProductIds.includes(item.id)}
                       onCheckedChange={(checked) => handleSelectItem(item.id, checked)}

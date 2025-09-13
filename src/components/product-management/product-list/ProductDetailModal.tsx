@@ -14,6 +14,16 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 
+// Helper to get YouTube embed URL
+const getYouTubeEmbedUrl = (url: string) => {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  if (match && match[2].length === 11) {
+    return `https://www.youtube.com/embed/${match[2]}`;
+  }
+  return null;
+};
+
 interface ProductDetailModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -116,12 +126,37 @@ export default function ProductDetailModal({ open, onOpenChange, productId }: Pr
 
                     {/* Description Section */}
                     {product.description && (
-                      <Card className="p-4">
+                      <Card className="p-4 mb-4"> {/* Added mb-4 for spacing */}
                         <Flex align="center" gap="2" mb="3">
                           <Info size={20} className="text-blue-500" />
                           <Text size="4" weight="bold">Description</Text>
                         </Flex>
                         <Text size="2" dangerouslySetInnerHTML={{ __html: product.description }} />
+                      </Card>
+                    )}
+
+                    {/* Videos Section */}
+                    {product.videos && product.videos.length > 0 && (
+                      <Card className="p-4">
+                        <Flex align="center" gap="2" mb="3">
+                          <Text size="4" weight="bold">Videos</Text>
+                        </Flex>
+                        <Grid columns={{ initial: '1', sm: '2' }} gap="3">
+                          {product.videos.map((videoUrl, index) => {
+                            const embedUrl = getYouTubeEmbedUrl(videoUrl);
+                            return embedUrl ? (
+                              <Box key={index} className="relative aspect-video">
+                                <iframe
+                                  src={embedUrl}
+                                  frameBorder="0"
+                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                  allowFullScreen
+                                  className="absolute top-0 left-0 w-full h-full rounded"
+                                ></iframe>
+                              </Box>
+                            ) : null;
+                          })}
+                        </Grid>
                       </Card>
                     )}
                   </Box>

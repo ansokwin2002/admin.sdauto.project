@@ -1,7 +1,7 @@
 import { Box, Button, Card, Flex, Grid, Text, TextField, Select, TextArea, RadioGroup, Dialog, IconButton } from '@radix-ui/themes';
 import { Save, X, Image as ImageIcon, Trash2, Upload, Link as LinkIcon } from 'lucide-react';
 import { Product } from '@/types/product';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 
 interface ProductFormProps {
@@ -27,16 +27,58 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: ProductF
   const [imagePreviews, setImagePreviews] = useState<string[]>(selectedItem?.images || []);
   const [imageUrls, setImageUrls] = useState<string>('');
   const [isUrlModalOpen, setUrlModalOpen] = useState(false);
-  const [videoUrls, setVideoUrls] = useState<string>('');
+  const [videoUrls, setVideoUrls] = useState<string>(
+    selectedItem?.videos ? selectedItem.videos.join('\n') : ''
+  );
+  const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
   const [isVideoUrlModalOpen, setVideoUrlModalOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Helper to get YouTube embed URL
+  const getYouTubeEmbedUrl = (url: string) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    if (match && match[2].length === 11) {
+      return `https://www.youtube.com/embed/${match[2]}`;
+    }
+    return null;
+  };
+
+  // Populate video previews from selectedItem
+  useEffect(() => {
+    if (selectedItem?.videos) {
+      let videosArray: string[] = [];
+      // Check if selectedItem.videos is already an array
+      if (Array.isArray(selectedItem.videos)) {
+        videosArray = selectedItem.videos;
+      } else if (typeof selectedItem.videos === 'string') {
+        // Attempt to parse if it's a JSON string
+        try {
+          const parsedVideos = JSON.parse(selectedItem.videos);
+          if (Array.isArray(parsedVideos)) {
+            videosArray = parsedVideos;
+          }
+        } catch (e) {
+          // Not a valid JSON string, treat as single URL if needed or log error
+          console.error("Failed to parse selectedItem.videos as JSON array:", e);
+          // Optionally, if it's a single URL string not in an array, handle it
+          // videosArray = [selectedItem.videos];
+        }
+      }
+
+      const validEmbedUrls = videosArray.map(url => getYouTubeEmbedUrl(url)).filter(Boolean) as string[];
+      setVideoPreviews(validEmbedUrls);
+    } else {
+      setVideoPreviews([]); // Clear previews if no videos
+    }
+  }, [selectedItem]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const urlList = imageUrls.split('\n').filter(url => url.trim() !== '');
-    const videoUrlList = videoUrls.split('\n').filter(url => url.trim() !== '');
-    onSubmit({ ...formData, image_urls: urlList, images: imageFiles, videos: videoUrlList });
+    const videoUrlsToSubmit = videoUrls.split('\n').filter(url => url.trim() !== '');
+    onSubmit({ ...formData, image_urls: urlList, images: imageFiles, videos: videoUrlsToSubmit });
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,11 +96,23 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: ProductF
     setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleRemoveVideo = (index: number) => {
+    setVideoPreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleAddUrls = () => {
     const urlList = imageUrls.split('\n').filter(url => url.trim() !== '');
     setImagePreviews(prev => [...prev, ...urlList]);
     setImageUrls('');
     setUrlModalOpen(false);
+  };
+
+  const handleAddVideoUrls = () => {
+    const urls = videoUrls.split('\n').filter(url => url.trim() !== '');
+    const newEmbedUrls = urls.map(url => getYouTubeEmbedUrl(url)).filter(Boolean) as string[];
+    setVideoPreviews(prev => [...prev, ...newEmbedUrls]);
+    setVideoUrls(''); // Clear the textarea
+    setVideoUrlModalOpen(false);
   };
 
   return (
@@ -154,6 +208,28 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: ProductF
               <Flex direction="column" gap="1">
                 <Text as="label" size="2" weight="medium">Videos</Text>
                 <Card>
+                  <Grid columns="2" gap="2">
+                    {videoPreviews.map((videoUrl, index) => (
+                      <Box key={index} className="relative aspect-video">
+                        <iframe
+                          src={videoUrl}
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          className="absolute top-0 left-0 w-full h-full rounded"
+                        ></iframe>
+                        <IconButton 
+                          size="1" 
+                          color="red" 
+                          variant="solid" 
+                          onClick={() => handleRemoveVideo(index)}
+                          style={{ position: 'absolute', top: 4, right: 4, cursor: 'pointer' }}
+                        >
+                          <Trash2 size={12} />
+                        </IconButton>
+                      </Box>
+                    ))}
+                  </Grid>
                   <Flex gap="2" mt="2">
                     <Button type="button" variant="soft" onClick={() => setVideoUrlModalOpen(true)}>
                       <LinkIcon size={16} /> Add from URLs
@@ -305,7 +381,7 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: ProductF
             <Dialog.Close>
               <Button variant="soft" color="gray">Cancel</Button>
             </Dialog.Close>
-            <Button onClick={() => setVideoUrlModalOpen(false)}>Add URLs</Button>
+            <Button onClick={handleAddVideoUrls}>Add URLs</Button>
           </Flex>
         </Dialog.Content>
       </Dialog.Root>

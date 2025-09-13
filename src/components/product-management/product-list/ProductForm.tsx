@@ -1,115 +1,69 @@
-import { Box, Button, Card, Flex, Grid, Heading, IconButton, Text, Badge, TextField, Select, TextArea, RadioGroup, Checkbox, Separator, Inset } from '@radix-ui/themes';
-import { ArrowLeft, Save, Upload, X, Image as ImageIcon, Trash, Trash2 } from 'lucide-react';
-import { MenuItem, menuCategories, dietaryLabels } from '@/data/MenuData';
-import { organization } from '@/data/CommonData';
-import DateRangeInput  from '@/components/common/DateRangeInput';
+import { Box, Button, Card, Flex, Grid, Text, TextField, Select, TextArea, RadioGroup, Dialog, IconButton } from '@radix-ui/themes';
+import { Save, X, Image as ImageIcon, Trash2, Upload, Link as LinkIcon } from 'lucide-react';
+import { Product } from '@/types/product';
 import { useState, useRef } from 'react';
-import { Range } from 'react-date-range';
-import SearchableSelect from '@/components/common/SearchableSelect';
-import { PageHeading } from '@/components/common/PageHeading';
 import Image from 'next/image';
 
-interface MenuFormProps {
-  selectedItem: MenuItem | null;
+interface ProductFormProps {
+  selectedItem: Partial<Product> | null;
   onBack: () => void;
-  onSubmit: (formData: Partial<MenuItem>) => void;
+  onSubmit: (formData: Partial<Product> & { image_urls?: string[], images?: File[], videos?: string[] }) => void;
 }
 
-export default function ProductForm({ selectedItem, onBack, onSubmit }: MenuFormProps) {
-  const [formData, setFormData] = useState<Partial<MenuItem>>({
+export default function ProductForm({ selectedItem, onBack, onSubmit }: ProductFormProps) {
+  const [formData, setFormData] = useState<Partial<Product>>({
     name: selectedItem?.name || '',
+    brand: selectedItem?.brand || '',
     category: selectedItem?.category || '',
-    price: selectedItem?.price || 0,
+    part_number: selectedItem?.part_number || '',
+    condition: selectedItem?.condition || 'New',
+    quantity: selectedItem?.quantity || 0,
+    price: selectedItem?.price || '0',
+    original_price: selectedItem?.original_price || '0',
     description: selectedItem?.description || '',
-    isSeasonal: selectedItem?.isSeasonal || false,
-    seasonalStartDate: selectedItem?.seasonalStartDate,
-    seasonalEndDate: selectedItem?.seasonalEndDate,
-    dietaryLabels: selectedItem?.dietaryLabels || [],
-    isActive: selectedItem?.isActive ?? true,
-    availableBranchesIds: selectedItem?.availableBranchesIds || [],
-    imageUrl: selectedItem?.imageUrl || ''
+    is_active: selectedItem?.is_active ?? true,
   });
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>(selectedItem?.images || []);
+  const [imageUrls, setImageUrls] = useState<string>('');
+  const [isUrlModalOpen, setUrlModalOpen] = useState(false);
+  const [videoUrls, setVideoUrls] = useState<string>('');
+  const [isVideoUrlModalOpen, setVideoUrlModalOpen] = useState(false);
 
-  const [isSeasonalItem, setIsSeasonalItem] = useState(formData.isSeasonal);
-  const [seasonalRange, setSeasonalRange] = useState<Range>({
-    startDate: formData.seasonalStartDate ? new Date(formData.seasonalStartDate) : undefined,
-    endDate: formData.seasonalEndDate ? new Date(formData.seasonalEndDate) : undefined,
-    key: 'selection'
-  });
-  const totalBranches = organization.filter(o => o.id !== 'hq').length;
-  const [availability, setAvailability] = useState(formData.availableBranchesIds?.length === totalBranches ? 'all' : formData.availableBranchesIds?.length > 0 ? 'selected' : 'all');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
-  };
-
-  const handleSeasonalChange = (checked: boolean) => {
-    setIsSeasonalItem(checked);
-    setFormData(prev => ({
-      ...prev,
-      isSeasonal: checked
-    }));
-  };
-
-  const handleSeasonalRangeChange = (range: Range) => {
-    setSeasonalRange(range);
-    setFormData(prev => ({
-      ...prev,
-      seasonalStartDate: range.startDate?.toISOString(),
-      seasonalEndDate: range.endDate?.toISOString()
-    }));
+    const urlList = imageUrls.split('\n').filter(url => url.trim() !== '');
+    const videoUrlList = videoUrls.split('\n').filter(url => url.trim() !== '');
+    onSubmit({ ...formData, image_urls: urlList, images: imageFiles, videos: videoUrlList });
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData(prev => ({
-          ...prev,
-          imageUrl: reader.result as string
-        }));
-      };
-      reader.readAsDataURL(file);
+    const files = e.target.files;
+    if (files) {
+      const newFiles = Array.from(files);
+      setImageFiles(prev => [...prev, ...newFiles]);
+      const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+      setImagePreviews(prev => [...prev, ...newPreviews]);
     }
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleRemoveImage = (index: number) => {
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData(prev => ({
-          ...prev,
-          imageUrl: reader.result as string
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
+  const handleAddUrls = () => {
+    const urlList = imageUrls.split('\n').filter(url => url.trim() !== '');
+    setImagePreviews(prev => [...prev, ...urlList]);
+    setImageUrls('');
+    setUrlModalOpen(false);
   };
 
   return (
     <Box>
       <form className="space-y-6" onSubmit={handleSubmit}>
-        <Flex align="center" justify="between">
-          <PageHeading
-            title={selectedItem ? selectedItem.name : 'Add New Product'} 
-            description={selectedItem ? 'Update/view product details' : 'Create a new product'} 
-            showBackButton={true} 
-            onBackClick={onBack}
-            noMarginBottom={true}
-          />
-        </Flex>
-
         <Grid columns={{ initial: '1', md: '4' }} gap="4">
           <Box className="md:col-span-3">
             <Card size="3" className="space-y-3 !overflow-visible" style={{ contain: 'none !important' }}>
@@ -123,16 +77,69 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: MenuForm
                       onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     />
                   </Flex>
+                   <Flex direction="column" gap="1">
+                    <Text as="label" size="2" weight="medium">Brand</Text>
+                    <TextField.Root
+                      type="text"
+                      value={formData.brand}
+                      onChange={(e) => setFormData(prev => ({ ...prev, brand: e.target.value }))}
+                    />
+                  </Flex>
+                </Grid>
+                 <Grid columns={{ initial: '1', sm: '2' }} gap="4" mt="3">
                   <Flex direction="column" gap="1">
-                    <Text as="label" size="2" weight="medium">Base Price</Text>
+                    <Text as="label" size="2" weight="medium">Part Number</Text>
+                    <TextField.Root
+                      type="text"
+                      value={formData.part_number}
+                      onChange={(e) => setFormData(prev => ({ ...prev, part_number: e.target.value }))}
+                    />
+                  </Flex>
+                  <Flex direction="column" gap="1">
+                    <Text as="label" size="2" weight="medium">Condition</Text>
+                    <Select.Root
+                      value={formData.condition}
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, condition: value }))}
+                    >
+                      <Select.Trigger placeholder="Select Condition" />
+                      <Select.Content>
+                        <Select.Item value="New">New</Select.Item>
+                        <Select.Item value="Used">Used</Select.Item>
+                        <Select.Item value="Refurbished">Refurbished</Select.Item>
+                      </Select.Content>
+                    </Select.Root>
+                  </Flex>
+                </Grid>
+                <Grid columns={{ initial: '1', sm: '2' }} gap="4" mt="3">
+                  <Flex direction="column" gap="1">
+                    <Text as="label" size="2" weight="medium">Original Price</Text>
                     <TextField.Root
                       type="number"
                       step="0.01"
-                      value={formData.price}
-                      onChange={(e) => setFormData(prev => ({ ...prev, price: parseFloat(e.target.value) }))}
+                      value={formData.original_price || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, original_price: parseFloat(e.target.value) || 0 }))}
                     >
                       <TextField.Slot>$</TextField.Slot>
                     </TextField.Root>
+                  </Flex>
+                  <Flex direction="column" gap="1">
+                    <Text as="label" size="2" weight="medium">Price</Text>
+                    <TextField.Root
+                      type="number"
+                      step="0.01"
+                      value={formData.price || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
+                    >
+                      <TextField.Slot>$</TextField.Slot>
+                    </TextField.Root>
+                  </Flex>
+                  <Flex direction="column" gap="1">
+                    <Text as="label" size="2" weight="medium">Quantity</Text>
+                    <TextField.Root
+                      type="number"
+                      value={formData.quantity}
+                      onChange={(e) => setFormData(prev => ({ ...prev, quantity: parseInt(e.target.value) || 0 }))}
+                    />
                   </Flex>
                 </Grid>
                 <Flex direction="column" gap="1" mt="3">
@@ -145,73 +152,59 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: MenuForm
               </Box>
 
               <Flex direction="column" gap="1">
-                <Text as="label" size="2" weight="medium">Image</Text>
-                <Box 
-                  className="border border-gray-300 dark:border-neutral-700 border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors"
-                  onDragOver={handleDragOver}
-                  onDrop={handleDrop}
-                  onClick={() => fileInputRef.current?.click()}
-                >
+                <Text as="label" size="2" weight="medium">Videos</Text>
+                <Card>
+                  <Flex gap="2" mt="2">
+                    <Button type="button" variant="soft" onClick={() => setVideoUrlModalOpen(true)}>
+                      <LinkIcon size={16} /> Add from URLs
+                    </Button>
+                  </Flex>
+                </Card>
+              </Flex>
+
+              <Flex direction="column" gap="1">
+                <Text as="label" size="2" weight="medium">Images</Text>
+                <Card>
+                  <Grid columns="4" gap="2">
+                    {imagePreviews.map((image, index) => (
+                      <Box key={index} className="relative">
+                        <Image 
+                          src={image} 
+                          alt={`Product image ${index + 1}`} 
+                          width={100}
+                          height={100}
+                          className="rounded object-cover w-full h-full"
+                        />
+                        <IconButton 
+                          size="1" 
+                          color="red" 
+                          variant="solid" 
+                          onClick={() => handleRemoveImage(index)}
+                          style={{ position: 'absolute', top: 4, right: 4, cursor: 'pointer' }}
+                        >
+                          <Trash2 size={12} />
+                        </IconButton>
+                      </Box>
+                    ))}
+                  </Grid>
+                  <Flex gap="2" mt="2">
+                    <Button type="button" variant="soft" onClick={() => fileInputRef.current?.click()}>
+                      <Upload size={16} /> Upload Images
+                    </Button>
+                    <Button type="button" variant="soft" onClick={() => setUrlModalOpen(true)}>
+                      <LinkIcon size={16} /> Add from URLs
+                    </Button>
+                  </Flex>
                   <input
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"
+                    multiple
                     className="hidden"
                     onChange={handleImageUpload}
                   />
-                  {formData.imageUrl ? (
-                    <Box className="relative">
-                      <Image 
-                        src={formData.imageUrl} 
-                        alt={formData.name} 
-                        width={564}
-                        height={317}
-                        className="max-w-48 mx-auto rounded-lg"
-                      />
-                      <Box mt="2">
-                        <Text as="p" className="text-slate-500 dark:text-neutral-600" size="2">Click or drag and drop new image to replace</Text>
-                        <Button variant="soft" color="red" mt="2" onClick={(e) => {
-                          e.stopPropagation();
-                          setFormData(prev => ({ ...prev, imageUrl: '' }));
-                        }}>
-                          Remove Image
-                        </Button>
-                      </Box>
-                    </Box>
-                  ) : (
-                    <Flex direction="column" align="center" gap="2">
-                      <Box className="p-2 bg-gray-100 dark:bg-neutral-800 rounded-full">
-                        <ImageIcon size={22} className="text-gray-400 dark:text-neutral-600" />
-                      </Box>
-                      <Text className="text-slate-500 dark:text-neutral-600">Click to upload image</Text>
-                      <Text className="text-slate-500 dark:text-neutral-600" size="2">or drag and drop</Text>
-                    </Flex>
-                  )}
-                </Box>
+                </Card>
               </Flex>
-
-              <Box>
-                <Text as="label" size="2" weight="medium">
-                  <Flex gap="2">
-                    <Checkbox
-                      checked={isSeasonalItem}
-                      onCheckedChange={handleSeasonalChange}
-                    />
-                    Seasonal Item
-                  </Flex>
-                </Text>
-                {isSeasonalItem && (
-                  <Box mt="2">
-                    <DateRangeInput
-                      value={seasonalRange}
-                      onChange={handleSeasonalRangeChange}
-                      placeholder="Select season period..."
-                      position="top"
-                      months={2}
-                    />
-                  </Box>
-                )}
-              </Box>
             </Card>
           </Box>
 
@@ -225,34 +218,13 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: MenuForm
                 >
                   <Select.Trigger placeholder="Select Category" />
                   <Select.Content>
-                    {menuCategories.map(category => (
-                      <Select.Item key={category.id} value={category.id}>
-                        {category.name}
-                      </Select.Item>
-                    ))}
+                    {/* Replace with actual categories from your API or data source */}
+                    <Select.Item value="electronics">Electronics</Select.Item>
+                    <Select.Item value="clothing">Clothing</Select.Item>
+                    <Select.Item value="books">Books</Select.Item>
                   </Select.Content>
                 </Select.Root>
               </Flex>
-              <Flex direction="column" gap="1">
-                <Text as="label" size="2" weight="medium">Dietary Labels</Text>
-                <SearchableSelect
-                  placeholder="Select Dietary Labels"
-                  options={dietaryLabels.map(label => ({
-                    value: label.id,
-                    label: label.name
-                  }))}
-                  isMulti={true}
-                  value={formData.dietaryLabels}
-                  onChange={(value) => setFormData(prev => ({ 
-                    ...prev, 
-                    dietaryLabels: value ? (Array.isArray(value) ? value : [value]) : [] 
-                  }))}
-                />
-              </Flex>
-
-              <Inset mt="4" mb="5">
-                <Separator size="4" mt="4" mb="4" />
-              </Inset>
               
               <Box>
                 <Flex direction="column" gap="3">
@@ -261,8 +233,8 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: MenuForm
                     <Flex gap="4">
                       <label className="flex items-center gap-2">
                         <RadioGroup.Root
-                          value={formData.isActive ? 'active' : 'inactive'}
-                          onValueChange={(value) => setFormData(prev => ({ ...prev, isActive: value === 'active' }))}
+                          value={formData.is_active ? 'active' : 'inactive'}
+                          onValueChange={(value) => setFormData(prev => ({ ...prev, is_active: value === 'active' }))}
                         >
                           <RadioGroup.Item value="active">Active</RadioGroup.Item>
                           <RadioGroup.Item value="inactive">Inactive</RadioGroup.Item>
@@ -270,41 +242,6 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: MenuForm
                       </label>
                     </Flex>
                   </Flex>
-                  <Flex direction="column" gap="1">
-                    <Text as="label" size="2" weight="medium">Availability</Text>
-                    <Flex gap="4">
-                      <label className="flex items-center gap-2">
-                        <RadioGroup.Root
-                          value={availability}
-                          onValueChange={(value) => setAvailability(value)}
-                        >
-                          <RadioGroup.Item value="all">All Branches</RadioGroup.Item>
-                          <RadioGroup.Item value="selected">Selected Branches</RadioGroup.Item>
-                          <RadioGroup.Item value="none">None</RadioGroup.Item>
-                        </RadioGroup.Root>
-                      </label>
-                    </Flex>
-                  </Flex>
-                  {availability === 'selected' && (
-                    <Box>
-                      <Flex direction="column" gap="1">
-                        <SearchableSelect
-                          placeholder="Select Branches"
-                          options={organization.filter(o => o.id !== 'hq').map(branch => ({
-                            value: branch.id,
-                            label: branch.name
-                          }))}
-                          isMulti={true}
-                          usePortal={true}
-                          value={formData.availableBranchesIds}
-                          onChange={(value) => setFormData(prev => ({ 
-                            ...prev, 
-                            availableBranchesIds: value ? (Array.isArray(value) ? value : [value]) : [] 
-                          }))}
-                        />
-                      </Flex>
-                    </Box>
-                  )}
                 </Flex>
               </Box>
             </Card>
@@ -330,6 +267,47 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: MenuForm
           )}
         </Flex>
       </form>
+      <Dialog.Root open={isUrlModalOpen} onOpenChange={setUrlModalOpen}>
+        <Dialog.Content style={{ maxWidth: 500 }}>
+          <Dialog.Title>Add Image URLs</Dialog.Title>
+          <Dialog.Description size="2" mb="4">
+            Enter one image URL per line.
+          </Dialog.Description>
+          <TextArea
+            value={imageUrls}
+            onChange={(e) => setImageUrls(e.target.value)}
+            placeholder="https://example.com/image1.jpg\nhttps://example.com/image2.jpg"
+            rows={5}
+          />
+          <Flex gap="3" mt="4" justify="end">
+            <Dialog.Close>
+              <Button variant="soft" color="gray">Cancel</Button>
+            </Dialog.Close>
+            <Button onClick={handleAddUrls}>Add URLs</Button>
+          </Flex>
+        </Dialog.Content>
+      </Dialog.Root>
+
+      <Dialog.Root open={isVideoUrlModalOpen} onOpenChange={setVideoUrlModalOpen}>
+        <Dialog.Content style={{ maxWidth: 500 }}>
+          <Dialog.Title>Add Video URLs</Dialog.Title>
+          <Dialog.Description size="2" mb="4">
+            Enter one video URL per line.
+          </Dialog.Description>
+          <TextArea
+            value={videoUrls}
+            onChange={(e) => setVideoUrls(e.target.value)}
+            placeholder="https://example.com/video1.mp4\nhttps://example.com/video2.mp4"
+            rows={5}
+          />
+          <Flex gap="3" mt="4" justify="end">
+            <Dialog.Close>
+              <Button variant="soft" color="gray">Cancel</Button>
+            </Dialog.Close>
+            <Button onClick={() => setVideoUrlModalOpen(false)}>Add URLs</Button>
+          </Flex>
+        </Dialog.Content>
+      </Dialog.Root>
     </Box>
   );
-} 
+}

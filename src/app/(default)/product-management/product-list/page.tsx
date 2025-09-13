@@ -12,6 +12,10 @@ import ProductDashboard from '@/components/product-management/product-list/Produ
 import ProductList from '@/components/product-management/product-list/ProductList';
 import { PageHeading } from '@/components/common/PageHeading';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import AddProductModal from '@/components/product-management/product-list/AddProductModal';
+import { Product } from '@/types/product';
+import { toast } from 'sonner';
+import { API_BASE_URL } from '@/utilities/constants';
 
 // Mock data for dashboard - this should be replaced with API data in the future
 const menuMetrics = {
@@ -33,6 +37,8 @@ function MenuContent() {
   const [statusFilter, setStatusFilter] = useState('all');
   const { activeBranchFilter, setActiveBranchFilter } = useFilterBranch();
   const { activeEntity } = useAppOrganization();
+  const [isAddModalOpen, setAddModalOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   
   const handleTabChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -44,8 +50,66 @@ function MenuContent() {
     setActiveBranchFilter(activeEntity.id === 'hq' ? null : activeEntity);
   }, [activeEntity, setActiveBranchFilter]);
 
-  const handleAddMenuItem = () => {
-    router.push('/product-management/product-list/add');
+  const handleAddProduct = () => {
+    setAddModalOpen(true);
+  };
+
+  const handleProductAdd = async (product: Partial<Product> & { image_urls?: string[], images?: File[], videos?: string[] }) => {
+    const formData = new FormData();
+
+    Object.entries(product).forEach(([key, value]) => {
+      if (key === 'is_active') {
+        formData.append(key, value ? '1' : '0');
+      } else if (key !== 'images' && key !== 'image_urls' && key !== 'videos') {
+        formData.append(key, value as string);
+      }
+    });
+
+    if (product.image_urls) {
+      product.image_urls.forEach(url => {
+        formData.append('image_urls[]', url);
+      });
+    }
+
+    if (product.images) {
+      product.images.forEach(file => {
+        formData.append('images[]', file);
+      });
+    }
+
+    if (product.videos) {
+        product.videos.forEach(url => {
+            formData.append('videos[]', url);
+        });
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/products`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (response.status === 422) {
+          const messages = Object.values(errorData.errors).flat();
+          toast.error(messages.join('\n'));
+        } else {
+          throw new Error(errorData.message || 'Failed to add product');
+        }
+        return;
+      }
+
+      const result = await response.json();
+      toast.success(result.message || 'Product added successfully!');
+      setAddModalOpen(false);
+      setRefreshKey(prevKey => prevKey + 1);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
+    }
   };
   
   const handleResetFilters = () => {
@@ -91,7 +155,7 @@ function MenuContent() {
             />
           </Box>
           <Box width={{ initial: "full", sm: "auto" }}>
-            <Button onClick={handleAddMenuItem} className="w-full sm:w-auto">
+            <Button onClick={handleAddProduct} className="w-full sm:w-auto">
               <PlusIcon size={16} />
               Add Product
             </Button>
@@ -132,9 +196,15 @@ function MenuContent() {
             onCategoryFilterChange={setCategoryFilter}
             onStatusFilterChange={setStatusFilter}
             onResetFilters={handleResetFilters}
+            refreshKey={refreshKey}
           />
         </Tabs.Content>
       </Tabs.Root>
+      <AddProductModal 
+        open={isAddModalOpen} 
+        onOpenChange={setAddModalOpen} 
+        onProductAdd={handleProductAdd} 
+      />
     </Box>
   );
 }

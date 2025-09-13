@@ -14,6 +14,15 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'picsum.photos',
       },
+      {
+        protocol: 'http',
+        hostname: '192.168.1.2',
+        port: '8000',
+      },
+      {
+        protocol: 'http',
+        hostname: 'example.com',
+      },
     ],
   },
   async rewrites() {

@@ -25,6 +25,7 @@ interface MenuListProps {
   onStatusFilterChange?: (value: string) => void;
   onAvailabilityFilterChange?: (value: string) => void;
   onResetFilters?: () => void;
+  refreshKey?: number;
 }
 
 // Helper to create a cache key for the current filter state
@@ -62,6 +63,7 @@ export default function ProductList({
   onCategoryFilterChange = () => {},
   onStatusFilterChange = () => {},
   onResetFilters = () => {},
+  refreshKey = 0,
 }: MenuListProps) {
   // Cache to store products by filter combination and page
   const [productCache, setProductCache] = useState<Map<string, Product[]>>(new Map());
@@ -139,7 +141,7 @@ export default function ProductList({
       filtered = filtered.filter(product =>
         product.name.toLowerCase().includes(lowerCaseSearchTerm) ||
         product.brand.toLowerCase().includes(lowerCaseSearchTerm) ||
-        product.category.toLowerCase().includes(lowerCaseSearchTerm)
+        product.category?.toLowerCase().includes(lowerCaseSearchTerm)
       );
     }
 
@@ -216,10 +218,15 @@ export default function ProductList({
       
       const data: PaginatedProductsResponse = await response.json();
 
+      // Sort products by created_at in descending order
+      const sortedData = data.data.sort((a, b) => {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+
       // Update product cache
       setProductCache(prevCache => {
         const newCache = new Map(prevCache);
-        newCache.set(cacheKey, data.data); // Store all products for this API cache key
+        newCache.set(cacheKey, sortedData); // Store sorted products for this API cache key
         return newCache;
       });
 
@@ -240,13 +247,19 @@ export default function ProductList({
 
   // Fetch data when API filters change (if not already cached)
   useEffect(() => {
-    if (!isApiFilterLoaded) {
-      fetchProducts(currentApiCacheKey); // Removed currentPage
-    } else {
-      setLoading(false);
-      setError(null);
-    }
-  }, [isApiFilterLoaded, currentApiCacheKey, fetchProducts]);
+    // Clear cache for the current API key to force a fresh fetch
+    setProductCache(prevCache => {
+      const newCache = new Map(prevCache);
+      newCache.delete(currentApiCacheKey);
+      return newCache;
+    });
+    setMetaCache(prevMetaCache => {
+      const newMetaCache = new Map(prevMetaCache);
+      newMetaCache.delete(currentApiCacheKey);
+      return newMetaCache;
+    });
+    fetchProducts(currentApiCacheKey); // Removed currentPage
+  }, [currentApiCacheKey, fetchProducts, refreshKey]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);

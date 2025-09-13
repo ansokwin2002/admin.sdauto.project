@@ -1,20 +1,18 @@
 import { Box, Button, Flex, Table, Text, Badge, TextField, Select, IconButton } from '@radix-ui/themes';
 import { Search, AlertCircle, RefreshCcw, Utensils, Edit, Trash2 } from 'lucide-react';
-import { MenuItem, menuCategories } from '@/data/MenuData';
-import { organization } from '@/data/CommonData';
 import Image from 'next/image';
 import Pagination from '@/components/common/Pagination';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import { SortableHeader } from '@/components/common/SortableHeader';
-import { useState } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import Link from 'next/link';
+import { Product, PaginatedProductsResponse } from '@/types/product';
+import { API_BASE_URL } from '@/utilities/constants';
+import NProgress from 'nprogress';
 
 interface MenuListProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
-  filteredMenuItems: MenuItem[];
-  onEditItem: (item: MenuItem) => void;
-  onDeleteItem: (item: MenuItem) => void;
   categoryFilter?: string;
   statusFilter?: string;
   availabilityFilter?: string;
@@ -24,52 +22,191 @@ interface MenuListProps {
   onResetFilters?: () => void;
 }
 
+// Helper to create a cache key for the current filter state
+const createCacheKey = (
+  searchTerm: string,
+  categoryFilter: string,
+  statusFilter: string,
+  sortKey: string,
+  sortDirection: string
+) => {
+  return `${searchTerm}-${categoryFilter}-${statusFilter}-${sortKey}-${sortDirection}`;
+};
+
+// Custom debounce hook
+const useDebounce = (value: string, delay: number) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
+
 export default function ProductList({
   searchTerm,
   onSearchChange,
-  filteredMenuItems,
-  onEditItem,
-  onDeleteItem,
   categoryFilter = 'all',
   statusFilter = 'all',
-  availabilityFilter = 'all',
   onCategoryFilterChange = () => {},
   onStatusFilterChange = () => {},
-  onAvailabilityFilterChange = () => {},
   onResetFilters = () => {},
 }: MenuListProps) {
+  // Cache to store products by filter combination and page
+  const [productCache, setProductCache] = useState<Map<string, Map<number, Product[]>>>(new Map());
+  const [metaCache, setMetaCache] = useState<Map<string, PaginatedProductsResponse['meta']>>(new Map());
+  
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<MenuItem | null>(null);
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
-  const availableBranches = organization.filter(b => b.id !== "hq");
+  const [itemToDelete, setItemToDelete] = useState<Product | null>(null);
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ 
+    key: 'created_at', 
+    direction: 'desc' 
+  });
 
-  // Calculate pagination values
-  const totalItems = filteredMenuItems.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentItems = filteredMenuItems.slice(startIndex, endIndex);
+  // Debounce search term to avoid too many API calls
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  // Track the current filter state (using debounced search term for API calls)
+  const currentCacheKey = useMemo(() => 
+    createCacheKey(debouncedSearchTerm, categoryFilter, statusFilter, sortConfig.key, sortConfig.direction),
+    [debouncedSearchTerm, categoryFilter, statusFilter, sortConfig.key, sortConfig.direction]
+  );
+
+  const prevCacheKey = useRef<string>('');
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    if (prevCacheKey.current !== currentCacheKey) {
+      setCurrentPage(1);
+      prevCacheKey.current = currentCacheKey;
+    }
+  }, [currentCacheKey]);
+
+  // Get current page data from cache
+  const currentPageData = useMemo(() => {
+    const filterCache = productCache.get(currentCacheKey);
+    return filterCache?.get(currentPage) || [];
+  }, [productCache, currentCacheKey, currentPage]);
+
+  // Get metadata from cache
+  const currentMeta = useMemo(() => {
+    return metaCache.get(currentCacheKey);
+  }, [metaCache, currentCacheKey]);
+
+  // Check if current page is already loaded
+  const isPageLoaded = useMemo(() => {
+    const filterCache = productCache.get(currentCacheKey);
+    return filterCache?.has(currentPage) || false;
+  }, [productCache, currentCacheKey, currentPage]);
+
+  // Determine if we should show loading state
+  const shouldShowLoading = useMemo(() => {
+    return loading && !isPageLoaded;
+  }, [loading, isPageLoaded]);
+
+  // Display data (limit items per page for display purposes)
+  const displayData = useMemo(() => {
+    return currentPageData.slice(0, itemsPerPage);
+  }, [currentPageData, itemsPerPage]);
+
+  const fetchProducts = useCallback(async (page: number, cacheKey: string) => {
+    NProgress.start();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const params = new URLSearchParams();
+      params.append('page', page.toString());
+      params.append('per_page', '10');
+      
+      // Enhanced search functionality - search by name, brand, and category
+      if (debouncedSearchTerm) {
+        params.append('search', debouncedSearchTerm);
+        // You can also add specific search fields if your API supports it
+        // params.append('search_fields', 'name,brand,category');
+      }
+      if (categoryFilter !== 'all') {
+        params.append('category', categoryFilter);
+      }
+      if (statusFilter !== 'all') {
+        params.append('active', statusFilter === 'active' ? 'true' : 'false');
+      }
+      if (sortConfig) {
+        params.append('sort_by', sortConfig.key);
+        params.append('sort_order', sortConfig.direction);
+      }
+
+      const response = await fetch(`${API_BASE_URL}/products?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch products');
+      }
+      
+      const data: PaginatedProductsResponse = await response.json();
+
+      // Update product cache
+      setProductCache(prevCache => {
+        const newCache = new Map(prevCache);
+        const filterCache = newCache.get(cacheKey) || new Map();
+        filterCache.set(page, data.data);
+        newCache.set(cacheKey, filterCache);
+        return newCache;
+      });
+
+      // Update meta cache (only needs to be stored once per filter combination)
+      setMetaCache(prevMetaCache => {
+        const newMetaCache = new Map(prevMetaCache);
+        newMetaCache.set(cacheKey, data.meta);
+        return newMetaCache;
+      });
+
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'An unknown error occurred');
+    } finally {
+      setLoading(false);
+      NProgress.done();
+    }
+  }, [debouncedSearchTerm, categoryFilter, statusFilter, sortConfig]);
+
+  // Fetch data when page changes or filters change (if not already cached)
+  useEffect(() => {
+    if (!isPageLoaded) {
+      fetchProducts(currentPage, currentCacheKey);
+    } else {
+      setLoading(false);
+      setError(null);
+    }
+  }, [currentPage, currentCacheKey, isPageLoaded, fetchProducts]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
-  const handleItemsPerPageChange = (value: number) => {
-    setItemsPerPage(value);
-    setCurrentPage(1);
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setItemsPerPage(newItemsPerPage);
+    // Note: This doesn't affect API calls since we always fetch 10 per page
+    // It only affects how many items are displayed from the cached data
   };
 
   const handleSort = (key: string) => {
     let direction: 'asc' | 'desc' = 'asc';
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
       direction = 'desc';
     }
     setSortConfig({ key, direction });
   };
 
-  const handleDeleteClick = (e: React.MouseEvent, item: MenuItem) => {
+  const handleDeleteClick = (e: React.MouseEvent, item: Product) => {
     e.stopPropagation();
     setItemToDelete(item);
     setDeleteConfirmOpen(true);
@@ -77,35 +214,36 @@ export default function ProductList({
 
   const handleConfirmDelete = () => {
     if (itemToDelete) {
-      onDeleteItem(itemToDelete);
+      // TODO: Implement actual delete API call
+      console.log('Delete item:', itemToDelete);
+      
+      // After successful deletion, invalidate cache for current filter
+      setProductCache(prevCache => {
+        const newCache = new Map(prevCache);
+        newCache.delete(currentCacheKey);
+        return newCache;
+      });
+      setMetaCache(prevMetaCache => {
+        const newMetaCache = new Map(prevMetaCache);
+        newMetaCache.delete(currentCacheKey);
+        return newMetaCache;
+      });
+      
+      // Re-fetch current page
+      fetchProducts(currentPage, currentCacheKey);
+      
       setItemToDelete(null);
     }
     setDeleteConfirmOpen(false);
   };
 
-  // Sort items based on sortConfig
-  const sortedItems = [...currentItems].sort((a, b) => {
-    if (!sortConfig) return 0;
-
-    let aValue = a[sortConfig.key as keyof MenuItem];
-    let bValue = b[sortConfig.key as keyof MenuItem];
-
-    if (sortConfig.key === 'price') {
-      aValue = a.price;
-      bValue = b.price;
-    } else if (sortConfig.key === 'availableBranchesIds') {
-      aValue = a.availableBranchesIds.length;
-      bValue = b.availableBranchesIds.length;
-    }
-
-    if (aValue < bValue) {
-      return sortConfig.direction === 'asc' ? -1 : 1;
-    }
-    if (aValue > bValue) {
-      return sortConfig.direction === 'asc' ? 1 : -1;
-    }
-    return 0;
-  });
+  // Clear cache when filters reset
+  const handleResetFilters = () => {
+    onResetFilters();
+    // Clear all caches as filters are being reset
+    setProductCache(new Map());
+    setMetaCache(new Map());
+  };
 
   return (
     <Box className="mt-6 space-y-4">
@@ -113,7 +251,7 @@ export default function ProductList({
         <Box className="flex-grow min-w-[250px]">
           <TextField.Root
             type="text"
-            placeholder="Search by name or category..."
+            placeholder="Search by product name, brand, or category..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
           >
@@ -128,9 +266,7 @@ export default function ProductList({
             <Select.Trigger placeholder="All Categories" />
             <Select.Content>
               <Select.Item value="all">All Categories</Select.Item>
-              {menuCategories.map(category => (
-                <Select.Item key={category.id} value={category.id}>{category.name}</Select.Item>
-              ))}
+              {/* TODO: Populate categories from API */}
             </Select.Content>
           </Select.Root>
         </Flex>
@@ -146,181 +282,150 @@ export default function ProductList({
           </Select.Root>
         </Flex>
 
-        <Flex align="center" gap="2" className="flex-shrink-0">
-          <Select.Root value={availabilityFilter} onValueChange={onAvailabilityFilterChange}>
-            <Select.Trigger placeholder="All Availability" />
-            <Select.Content>
-              <Select.Item value="all">All Availability</Select.Item>
-              <Select.Item value="all_branches">All Branches</Select.Item>
-              <Select.Item value="some_branches">Some Branches</Select.Item>
-              <Select.Item value="not_available">Not Available</Select.Item>
-            </Select.Content>
-          </Select.Root>
-        </Flex>
-
         <Button 
           variant="soft" 
-          color={(categoryFilter !== 'all' || statusFilter !== 'all' || availabilityFilter !== 'all' || searchTerm !== '') ? 'red' : 'gray'} 
-          onClick={onResetFilters}
+          color={(categoryFilter !== 'all' || statusFilter !== 'all' || searchTerm !== '') ? 'red' : 'gray'} 
+          onClick={handleResetFilters}
           className="flex-shrink-0"
-          disabled={(categoryFilter === 'all' && statusFilter === 'all' && availabilityFilter === 'all' && searchTerm === '')}
+          disabled={(categoryFilter === 'all' && statusFilter === 'all' && searchTerm === '')}
         >
           <RefreshCcw size={16} />
           Reset Filters
         </Button>
       </Flex>
       
-      <Table.Root variant="surface">
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeaderCell>
-              <SortableHeader
-                label="Menu Name"
-                sortKey="name"
-                currentSort={sortConfig}
-                onSort={handleSort}
-              />
-            </Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>
-              <SortableHeader
-                label="Category"
-                sortKey="category"
-                currentSort={sortConfig}
-                onSort={handleSort}
-              />
-            </Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell align="right">
-              <SortableHeader
-                label="Base Price"
-                sortKey="price"
-                currentSort={sortConfig}
-                onSort={handleSort}
-              />
-            </Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>
-              <SortableHeader
-                label="Status"
-                sortKey="isActive"
-                currentSort={sortConfig}
-                onSort={handleSort}
-              />
-            </Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>
-              <SortableHeader
-                label="Availability"
-                sortKey="availableBranchesIds"
-                currentSort={sortConfig}
-                onSort={handleSort}
-              />
-            </Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>
-              <SortableHeader
-                label="Seasonal?"
-                sortKey="isSeasonal"
-                currentSort={sortConfig}
-                onSort={handleSort}
-              />
-            </Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell align="right">Actions</Table.ColumnHeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {sortedItems.map((item) => (
-            <Table.Row key={item.id} className="cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-800" onClick={() => onEditItem(item)}>
-              <Table.Cell>
-                <Flex align="center" gap="2">
-                  {item.imageUrl ? (
-                    <Image
-                      src={item.imageUrl} 
-                      alt={item.name} 
-                      width={32} 
-                      height={32}
-                      className="rounded object-cover w-5 h-5"
-                    />
-                  ) : (
-                    <Flex align="center" justify="center" className="w-5 h-5 rounded bg-slate-200 dark:bg-neutral-600">
-                      <Utensils size={12} className="text-gray-500 dark:text-gray-300" />
-                    </Flex>
-                  )}
-                  {item.stockWarning && <AlertCircle size={16} className="text-amber-500" />}
-                  {item.name}
-                </Flex>
-              </Table.Cell>
-              <Table.Cell>
-                {menuCategories.find(cat => cat.id === item.category)?.name}
-              </Table.Cell>
-              <Table.Cell align="right">${item.price.toFixed(2)}</Table.Cell>
-              <Table.Cell>
-                <Badge color={item.isActive ? 'green' : 'gray'} variant="soft">
-                  {item.isActive ? 'Active' : 'Inactive'}
-                </Badge>
-              </Table.Cell>
-              <Table.Cell>
-                {item.availableBranchesIds.length === 0 ? (
-                  <Badge color="red" variant="soft">Not Available</Badge>
-                ) : item.availableBranchesIds.length === availableBranches.length ? (
-                  <Badge color="green" variant="soft">All Branches</Badge>
-                ) : (
-                  <Badge color="amber" variant="soft">
-                    {item.availableBranchesIds.length} of {availableBranches.length} Branches
-                  </Badge>
-                )}
-              </Table.Cell>
-              <Table.Cell>
-                {item.isSeasonal ? (
-                  <Text>Yes</Text>
-                ) : (
-                  <Text>No</Text>
-                )}
-              </Table.Cell>
-              <Table.Cell align="right">
-                <Flex gap="3" justify="end">
-                  <Link href={`/product-management/product-list/${item.id}`}>
-                    <IconButton 
-                      variant="ghost" 
-                      size="1"
-                      color="gray"
-                    >
-                      <Edit size={14} />
-                    </IconButton>
-                  </Link>
-                  <IconButton 
-                    variant="ghost" 
-                    color="red" 
-                    size="1" 
-                    onClick={(e) => handleDeleteClick(e, item)}
-                  >
-                    <Trash2 size={14} />
-                  </IconButton>
-                </Flex>
-              </Table.Cell>
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table.Root>
-      
-      {filteredMenuItems.length === 0 ? (
+      {shouldShowLoading ? (
         <Box className="py-8 text-center">
-          <Text size="3" color="gray">No menu items found matching your search criteria.</Text>
+          <Text size="3" color="gray">Loading products...</Text>
         </Box>
+      ) : error ? (
+        <Box className="py-8 text-center">
+          <Text size="3" color="red">Error: {error}</Text>
+        </Box>
+      
       ) : (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          itemsPerPage={itemsPerPage}
-          totalItems={totalItems}
-          startIndex={startIndex}
-          endIndex={endIndex}
-          onPageChange={handlePageChange}
-          onItemsPerPageChange={handleItemsPerPageChange}
-        />
+        <>
+          {/* Show search indicator if actively searching */}
+          {debouncedSearchTerm !== searchTerm && searchTerm !== '' && (
+            <Box className="py-2 px-4 bg-blue-50 dark:bg-blue-950 rounded-md border border-blue-200 dark:border-blue-800">
+              <Text size="2" color="blue">Searching for "{searchTerm}"...</Text>
+            </Box>
+          )}
+          
+          <Table.Root variant="surface">
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeaderCell>
+                  <SortableHeader label="Product Name" sortKey="name" currentSort={sortConfig} onSort={handleSort} />
+                </Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>
+                  <SortableHeader label="Brand" sortKey="brand" currentSort={sortConfig} onSort={handleSort} />
+                </Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>
+                  <SortableHeader label="Category" sortKey="category" currentSort={sortConfig} onSort={handleSort} />
+                </Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell align="right">
+                  <SortableHeader label="Price" sortKey="price" currentSort={sortConfig} onSort={handleSort} />
+                </Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell align="right">
+                  <SortableHeader label="Quantity" sortKey="quantity" currentSort={sortConfig} onSort={handleSort} />
+                </Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>
+                  <SortableHeader label="Status" sortKey="is_active" currentSort={sortConfig} onSort={handleSort} />
+                </Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>
+                  <SortableHeader label="Stock Status" sortKey="stock_status" currentSort={sortConfig} onSort={handleSort} />
+                </Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell align="right">Actions</Table.ColumnHeaderCell>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {displayData.map((item) => (
+                <Table.Row key={item.id} className="cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-800">
+                  <Table.Cell>
+                    <Flex align="center" gap="2">
+                      {item.primary_image ? (
+                        <Image
+                          src={item.primary_image} 
+                          alt={item.name} 
+                          width={32} 
+                          height={32}
+                          className="rounded object-cover w-5 h-5"
+                        />
+                      ) : (
+                        <Flex align="center" justify="center" className="w-5 h-5 rounded bg-slate-200 dark:bg-neutral-600">
+                          <Utensils size={12} className="text-gray-500 dark:text-gray-300" />
+                        </Flex>
+                      )}
+                      {item.is_low_stock && <AlertCircle size={16} className="text-amber-500" />}
+                      {item.name}
+                    </Flex>
+                  </Table.Cell>
+                  <Table.Cell>{item.brand}</Table.Cell>
+                  <Table.Cell>{item.category}</Table.Cell>
+                  <Table.Cell align="right">{item.formatted_price}</Table.Cell>
+                  <Table.Cell align="right">{item.quantity}</Table.Cell>
+                  <Table.Cell>
+                    <Badge color={item.is_active ? 'green' : 'gray'} variant="soft">
+                      {item.is_active ? 'Active' : 'Inactive'}
+                    </Badge>
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Badge 
+                      color={item.stock_status === 'in_stock' ? 'green' : item.stock_status === 'low_stock' ? 'amber' : 'red'} 
+                      variant="soft"
+                    >
+                      {item.stock_status.replace('_', ' ')}
+                    </Badge>
+                  </Table.Cell>
+                  <Table.Cell align="right">
+                    <Flex gap="3" justify="end">
+                      <Link href={`/product-management/product-list/${item.id}`}>
+                        <IconButton variant="ghost" size="1" color="gray">
+                          <Edit size={14} />
+                        </IconButton>
+                      </Link>
+                      <IconButton 
+                        variant="ghost" 
+                        color="red" 
+                        size="1" 
+                        onClick={(e) => handleDeleteClick(e, item)}
+                      >
+                        <Trash2 size={14} />
+                      </IconButton>
+                    </Flex>
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table.Root>
+          
+          {displayData.length === 0 && !shouldShowLoading ? (
+            <Box className="py-8 text-center">
+              <Text size="3" color="gray">No products found matching your search criteria.</Text>
+            </Box>
+          ) : (
+            currentMeta && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={Number(currentMeta.last_page ?? 1)}
+                itemsPerPage={itemsPerPage}
+                totalItems={Number(currentMeta.total ?? 0)}
+                startIndex={(currentPage - 1) * 10 + 1}
+                endIndex={Math.min(currentPage * 10, Number(currentMeta.total ?? 0))}
+                onPageChange={handlePageChange}
+                onItemsPerPageChange={handleItemsPerPageChange}
+              />
+            )
+          )}
+        </>
       )}
 
       <ConfirmDialog
         open={deleteConfirmOpen}
         onOpenChange={setDeleteConfirmOpen}
         onConfirm={handleConfirmDelete}
-        title="Delete Menu Item"
+        title="Delete Product"
         description={`Are you sure you want to delete "${itemToDelete?.name}"? This action cannot be undone.`}
         confirmText="Delete"
         cancelText="Cancel"
@@ -328,4 +433,4 @@ export default function ProductList({
       />
     </Box>
   );
-} 
+}

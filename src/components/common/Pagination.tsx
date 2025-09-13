@@ -12,8 +12,8 @@ interface PaginationProps {
 }
 
 export default function Pagination({
-  currentPage,
-  totalPages,
+  currentPage: initialCurrentPage,
+  totalPages: initialTotalPages,
   itemsPerPage,
   totalItems,
   startIndex,
@@ -21,6 +21,8 @@ export default function Pagination({
   onPageChange,
   onItemsPerPageChange
 }: PaginationProps) {
+  const currentPage = isNaN(initialCurrentPage) || initialCurrentPage < 1 ? 1 : initialCurrentPage;
+  const totalPages = isNaN(initialTotalPages) || initialTotalPages < 1 ? 1 : initialTotalPages;
   const getPageNumbers = () => {
     const pages = [];
     const maxVisiblePages = 5;

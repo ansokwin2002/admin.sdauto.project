@@ -23,14 +23,13 @@ interface MenuListProps {
 }
 
 // Helper to create a cache key for the current filter state
-const createCacheKey = (
-  searchTerm: string,
+const createApiCacheKey = (
   categoryFilter: string,
   statusFilter: string,
   sortKey: string,
   sortDirection: string
 ) => {
-  return `${searchTerm}-${categoryFilter}-${statusFilter}-${sortKey}-${sortDirection}`;
+  return `${categoryFilter}-${statusFilter}-${sortKey}-${sortDirection}`;
 };
 
 // Custom debounce hook
@@ -60,7 +59,7 @@ export default function ProductList({
   onResetFilters = () => {},
 }: MenuListProps) {
   // Cache to store products by filter combination and page
-  const [productCache, setProductCache] = useState<Map<string, Map<number, Product[]>>>(new Map());
+  const [productCache, setProductCache] = useState<Map<string, Product[]>>(new Map());
   const [metaCache, setMetaCache] = useState<Map<string, PaginatedProductsResponse['meta']>>(new Map());
   
   const [loading, setLoading] = useState(true);
@@ -77,65 +76,111 @@ export default function ProductList({
   // Debounce search term to avoid too many API calls
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
-  // Track the current filter state (using debounced search term for API calls)
-  const currentCacheKey = useMemo(() => 
-    createCacheKey(debouncedSearchTerm, categoryFilter, statusFilter, sortConfig.key, sortConfig.direction),
-    [debouncedSearchTerm, categoryFilter, statusFilter, sortConfig.key, sortConfig.direction]
+  // Track the current filter state for API calls
+  const currentApiCacheKey = useMemo(() => 
+    createApiCacheKey(categoryFilter, statusFilter, sortConfig.key, sortConfig.direction),
+    [categoryFilter, statusFilter, sortConfig.key, sortConfig.direction]
   );
 
   const prevCacheKey = useRef<string>('');
 
-  // Reset to page 1 when filters change
+  // Reset to page 1 when API filters change
   useEffect(() => {
-    if (prevCacheKey.current !== currentCacheKey) {
+    if (prevCacheKey.current !== currentApiCacheKey) {
       setCurrentPage(1);
-      prevCacheKey.current = currentCacheKey;
+      prevCacheKey.current = currentApiCacheKey;
     }
-  }, [currentCacheKey]);
+  }, [currentApiCacheKey]);
 
-  // Get current page data from cache
-  const currentPageData = useMemo(() => {
-    const filterCache = productCache.get(currentCacheKey);
-    return filterCache?.get(currentPage) || [];
-  }, [productCache, currentCacheKey, currentPage]);
+  // Get all products for the current API filter combination from cache
+  const allProductsForApiFilter = useMemo(() => {
+    return productCache.get(currentApiCacheKey) || [];
+  }, [productCache, currentApiCacheKey]);
 
   // Get metadata from cache
   const currentMeta = useMemo(() => {
-    return metaCache.get(currentCacheKey);
-  }, [metaCache, currentCacheKey]);
+    return metaCache.get(currentApiCacheKey);
+  }, [metaCache, currentApiCacheKey]);
 
-  // Check if current page is already loaded
-  const isPageLoaded = useMemo(() => {
-    const filterCache = productCache.get(currentCacheKey);
-    return filterCache?.has(currentPage) || false;
-  }, [productCache, currentCacheKey, currentPage]);
+  // Check if current API filter combination is already loaded
+  const isApiFilterLoaded = useMemo(() => {
+    return productCache.has(currentApiCacheKey);
+  }, [productCache, currentApiCacheKey]);
 
   // Determine if we should show loading state
   const shouldShowLoading = useMemo(() => {
-    return loading && !isPageLoaded;
-  }, [loading, isPageLoaded]);
+    return loading && !isApiFilterLoaded;
+  }, [loading, isApiFilterLoaded]);
 
-  // Display data (limit items per page for display purposes)
-  const displayData = useMemo(() => {
-    return currentPageData.slice(0, itemsPerPage);
-  }, [currentPageData, itemsPerPage]);
+  // Apply client-side search and filters
+  const filteredProducts = useMemo(() => {
+    let filtered = allProductsForApiFilter;
 
-  const fetchProducts = useCallback(async (page: number, cacheKey: string) => {
+    // Apply search term
+    if (debouncedSearchTerm) {
+      const lowerCaseSearchTerm = debouncedSearchTerm.toLowerCase();
+      filtered = filtered.filter(product =>
+        product.name.toLowerCase().includes(lowerCaseSearchTerm) ||
+        product.brand.toLowerCase().includes(lowerCaseSearchTerm) ||
+        product.category.toLowerCase().includes(lowerCaseSearchTerm)
+      );
+    }
+
+    // Apply status filter (already handled by API, but keeping for consistency if API changes)
+    // if (statusFilter !== 'all') {
+    //   filtered = filtered.filter(product =>
+    //     statusFilter === 'active' ? product.is_active : !product.is_active
+    //   );
+    // }
+
+    // Apply category filter (already handled by API, but keeping for consistency if API changes)
+    // if (categoryFilter !== 'all') {
+    //   filtered = filtered.filter(product => product.category === categoryFilter);
+    // }
+
+    return filtered;
+  }, [allProductsForApiFilter, debouncedSearchTerm]); // Removed categoryFilter and statusFilter as they are handled by API for now
+
+  // Apply client-side sorting
+  const sortedProducts = useMemo(() => {
+    if (!sortConfig.key) {
+      return filteredProducts;
+    }
+
+    return [...filteredProducts].sort((a, b) => {
+      const aValue = a[sortConfig.key as keyof Product];
+      const bValue = b[sortConfig.key as keyof Product];
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortConfig.direction === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+      }
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortConfig.direction === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      // Fallback for other types or if values are not comparable
+      return 0;
+    });
+  }, [filteredProducts, sortConfig]);
+
+  // Client-side pagination
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return sortedProducts.slice(startIndex, endIndex);
+  }, [sortedProducts, currentPage, itemsPerPage]);
+
+  // Display data (now paginatedProducts)
+  const displayData = paginatedProducts;
+
+  const fetchProducts = useCallback(async (cacheKey: string) => { // Removed 'page' parameter
     NProgress.start();
     setLoading(true);
     setError(null);
 
     try {
       const params = new URLSearchParams();
-      params.append('page', page.toString());
-      params.append('per_page', '10');
-      
-      // Enhanced search functionality - search by name, brand, and category
-      if (debouncedSearchTerm) {
-        params.append('search', debouncedSearchTerm);
-        // You can also add specific search fields if your API supports it
-        // params.append('search_fields', 'name,brand,category');
-      }
+      // params.append('page', page.toString()); // Page is now handled client-side
+      params.append('per_page', '1000'); // Fetch a larger set for client-side filtering
       if (categoryFilter !== 'all') {
         params.append('category', categoryFilter);
       }
@@ -157,9 +202,7 @@ export default function ProductList({
       // Update product cache
       setProductCache(prevCache => {
         const newCache = new Map(prevCache);
-        const filterCache = newCache.get(cacheKey) || new Map();
-        filterCache.set(page, data.data);
-        newCache.set(cacheKey, filterCache);
+        newCache.set(cacheKey, data.data); // Store all products for this API cache key
         return newCache;
       });
 
@@ -176,17 +219,17 @@ export default function ProductList({
       setLoading(false);
       NProgress.done();
     }
-  }, [debouncedSearchTerm, categoryFilter, statusFilter, sortConfig]);
+  }, [categoryFilter, statusFilter, sortConfig]); // Removed debouncedSearchTerm as it's client-side
 
-  // Fetch data when page changes or filters change (if not already cached)
+  // Fetch data when API filters change (if not already cached)
   useEffect(() => {
-    if (!isPageLoaded) {
-      fetchProducts(currentPage, currentCacheKey);
+    if (!isApiFilterLoaded) {
+      fetchProducts(currentApiCacheKey); // Removed currentPage
     } else {
       setLoading(false);
       setError(null);
     }
-  }, [currentPage, currentCacheKey, isPageLoaded, fetchProducts]);
+  }, [isApiFilterLoaded, currentApiCacheKey, fetchProducts]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -220,17 +263,17 @@ export default function ProductList({
       // After successful deletion, invalidate cache for current filter
       setProductCache(prevCache => {
         const newCache = new Map(prevCache);
-        newCache.delete(currentCacheKey);
+        newCache.delete(currentApiCacheKey);
         return newCache;
       });
       setMetaCache(prevMetaCache => {
         const newMetaCache = new Map(prevMetaCache);
-        newMetaCache.delete(currentCacheKey);
+        newMetaCache.delete(currentApiCacheKey);
         return newMetaCache;
       });
       
       // Re-fetch current page
-      fetchProducts(currentPage, currentCacheKey);
+      fetchProducts(currentApiCacheKey);
       
       setItemToDelete(null);
     }
@@ -408,11 +451,11 @@ export default function ProductList({
             currentMeta && (
               <Pagination
                 currentPage={currentPage}
-                totalPages={Number(currentMeta.last_page ?? 1)}
+                totalPages={Math.ceil(filteredProducts.length / itemsPerPage)}
                 itemsPerPage={itemsPerPage}
-                totalItems={Number(currentMeta.total ?? 0)}
-                startIndex={(currentPage - 1) * 10 + 1}
-                endIndex={Math.min(currentPage * 10, Number(currentMeta.total ?? 0))}
+                totalItems={filteredProducts.length}
+                startIndex={(currentPage - 1) * itemsPerPage + 1}
+                endIndex={Math.min(currentPage * itemsPerPage, filteredProducts.length)}
                 onPageChange={handlePageChange}
                 onItemsPerPageChange={handleItemsPerPageChange}
               />

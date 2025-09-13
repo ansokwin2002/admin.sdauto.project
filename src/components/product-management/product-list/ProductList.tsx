@@ -415,7 +415,9 @@ export default function ProductList({
                     onCheckedChange={handleSelectAll}
                   />
                 </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>ID</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>
+                  <SortableHeader label="ID" sortKey="id" currentSort={sortConfig} onSort={handleSort} />
+                </Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Image</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>
                   <SortableHeader label="Product Name" sortKey="name" currentSort={sortConfig} onSort={handleSort} />
@@ -426,10 +428,10 @@ export default function ProductList({
                 <Table.ColumnHeaderCell>
                   <SortableHeader label="Category" sortKey="category" currentSort={sortConfig} onSort={handleSort} />
                 </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell align="right">
+                <Table.ColumnHeaderCell align="left">
                   <SortableHeader label="Price" sortKey="price" currentSort={sortConfig} onSort={handleSort} />
                 </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell align="right">
+                <Table.ColumnHeaderCell align="left">
                   <SortableHeader label="Quantity" sortKey="quantity" currentSort={sortConfig} onSort={handleSort} />
                 </Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>
@@ -476,8 +478,8 @@ export default function ProductList({
                   </Table.Cell>
                   <Table.Cell>{item.brand}</Table.Cell>
                   <Table.Cell>{item.category}</Table.Cell>
-                  <Table.Cell align="right">{item.formatted_price}</Table.Cell>
-                  <Table.Cell align="right">{item.quantity}</Table.Cell>
+                  <Table.Cell align="left">{item.formatted_price}</Table.Cell>
+                  <Table.Cell align="left">{item.quantity}</Table.Cell>
                   <Table.Cell>
                     <Badge color={item.is_active ? 'green' : 'gray'} variant="soft">
                       {item.is_active ? 'Active' : 'Inactive'}

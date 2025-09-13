@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Table, Text, Badge, TextField, Select, IconButton, Checkbox } from '@radix-ui/themes';
+import { Box, Button, Flex, Table, Text, Badge, TextField, Select, IconButton, Checkbox, Dialog } from '@radix-ui/themes';
 import { Search, AlertCircle, RefreshCcw, Utensils, Edit, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import Pagination from '@/components/common/Pagination';
@@ -9,6 +9,11 @@ import Link from 'next/link';
 import { Product, PaginatedProductsResponse } from '@/types/product';
 import { API_BASE_URL } from '@/utilities/constants';
 import NProgress from 'nprogress';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, Pagination as SwiperPagination, Navigation } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
 
 interface MenuListProps {
   searchTerm: string;
@@ -69,6 +74,8 @@ export default function ProductList({
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<Product | null>(null);
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [currentProductImages, setCurrentProductImages] = useState<string[]>([]);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ 
     key: 'created_at', 
     direction: 'desc' 
@@ -320,6 +327,11 @@ export default function ProductList({
     );
   };
 
+  const handleImageClick = (images: string[]) => {
+    setCurrentProductImages(images);
+    setIsImageModalOpen(true);
+  };
+
   // Clear cache when filters reset
   const handleResetFilters = () => {
     onResetFilters();
@@ -408,53 +420,53 @@ export default function ProductList({
           
           <Table.Root variant="surface">
             <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeaderCell width="40px">
+              <tr className="rt-TableRow">
+                <th className="rt-TableCell" style={{ width: "40px" }}>
                   <Checkbox
                     checked={selectedProductIds.length === displayData.length && displayData.length > 0}
                     onCheckedChange={handleSelectAll}
                   />
-                </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>
+                </th>
+                <th className="rt-TableCell">
                   <SortableHeader label="ID" sortKey="id" currentSort={sortConfig} onSort={handleSort} />
-                </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Image</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>
+                </th>
+                <th className="rt-TableCell">Image</th>
+                <th className="rt-TableCell">
                   <SortableHeader label="Product Name" sortKey="name" currentSort={sortConfig} onSort={handleSort} />
-                </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>
+                </th>
+                <th className="rt-TableCell">
                   <SortableHeader label="Brand" sortKey="brand" currentSort={sortConfig} onSort={handleSort} />
-                </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>
+                </th>
+                <th className="rt-TableCell">
                   <SortableHeader label="Category" sortKey="category" currentSort={sortConfig} onSort={handleSort} />
-                </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell align="left">
+                </th>
+                <th className="rt-TableCell" style={{ textAlign: "left" }}>
                   <SortableHeader label="Price" sortKey="price" currentSort={sortConfig} onSort={handleSort} />
-                </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell align="left">
+                </th>
+                <th className="rt-TableCell" style={{ textAlign: "left" }}>
                   <SortableHeader label="Quantity" sortKey="quantity" currentSort={sortConfig} onSort={handleSort} />
-                </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>
+                </th>
+                <th className="rt-TableCell">
                   <SortableHeader label="Status" sortKey="is_active" currentSort={sortConfig} onSort={handleSort} />
-                </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>
+                </th>
+                <th className="rt-TableCell">
                   <SortableHeader label="Stock Status" sortKey="stock_status" currentSort={sortConfig} onSort={handleSort} />
-                </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell align="right">Actions</Table.ColumnHeaderCell>
-              </Table.Row>
+                </th>
+                <th className="rt-TableCell" style={{ textAlign: "right" }}>Actions</th>
+              </tr>
             </Table.Header>
             <Table.Body>
               {displayData.map((item) => (
-                <Table.Row key={item.id} className="cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-800">
-                  <Table.Cell> {/* Checkbox for individual item */}
+                <tr key={item.id} className="rt-TableRow cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-800">
+                  <td className="rt-TableCell">
                     <Checkbox
                       checked={selectedProductIds.includes(item.id)}
                       onCheckedChange={(checked) => handleSelectItem(item.id, checked)}
                     />
-                  </Table.Cell>
-                  <Table.Cell>{item.id}</Table.Cell> {/* Product ID */}
-                  <Table.Cell> {/* Image Cell */}
-                    <Flex align="center" justify="center" className="w-8 h-8">
+                  </td>
+                  <td className="rt-TableCell">{item.id}</td>
+                  <td className="rt-TableCell">
+                    <Flex align="center" justify="center" className="w-8 h-8 cursor-pointer" onClick={() => handleImageClick(item.images)}>
                       {item.primary_image ? (
                         <Image
                           src={item.primary_image} 
@@ -469,31 +481,31 @@ export default function ProductList({
                         </Flex>
                       )}
                     </Flex>
-                  </Table.Cell>
-                  <Table.Cell> {/* Original Product Name Cell, now without image */}
+                  </td>
+                  <td className="rt-TableCell">
                     <Flex align="center" gap="2">
                       {item.is_low_stock && <AlertCircle size={16} className="text-amber-500" />}
                       {item.name}
                     </Flex>
-                  </Table.Cell>
-                  <Table.Cell>{item.brand}</Table.Cell>
-                  <Table.Cell>{item.category}</Table.Cell>
-                  <Table.Cell align="left">{item.formatted_price}</Table.Cell>
-                  <Table.Cell align="left">{item.quantity}</Table.Cell>
-                  <Table.Cell>
+                  </td>
+                  <td className="rt-TableCell">{item.brand}</td>
+                  <td className="rt-TableCell">{item.category}</td>
+                  <td className="rt-TableCell" align="left">{item.formatted_price}</td>
+                  <td className="rt-TableCell" align="left">{item.quantity}</td>
+                  <td className="rt-TableCell">
                     <Badge color={item.is_active ? 'green' : 'gray'} variant="soft">
                       {item.is_active ? 'Active' : 'Inactive'}
                     </Badge>
-                  </Table.Cell>
-                  <Table.Cell>
+                  </td>
+                  <td className="rt-TableCell">
                     <Badge 
                       color={item.stock_status === 'in_stock' ? 'green' : item.stock_status === 'low_stock' ? 'amber' : 'red'} 
                       variant="soft"
                     >
                       {item.stock_status.replace('_', ' ')}
                     </Badge>
-                  </Table.Cell>
-                  <Table.Cell align="right">
+                  </td>
+                  <td className="rt-TableCell" align="right">
                     <Flex gap="3" justify="end">
                       <Link href={`/product-management/product-list/${item.id}`}>
                         <IconButton variant="ghost" size="1" color="gray">
@@ -509,8 +521,8 @@ export default function ProductList({
                         <Trash2 size={14} />
                       </IconButton>
                     </Flex>
-                  </Table.Cell>
-                </Table.Row>
+                  </td>
+                </tr>
               ))}
             </Table.Body>
           </Table.Root>
@@ -549,6 +561,54 @@ export default function ProductList({
         cancelText="Cancel"
         color="red"
       />
+
+      <Dialog.Root open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
+        <Dialog.Content style={{ maxWidth: 600 }}>
+          <Dialog.Title>Product Images</Dialog.Title>
+          <Dialog.Description size="2" mb="4">
+            All available images for this product.
+          </Dialog.Description>
+
+          <Swiper
+            spaceBetween={30}
+            centeredSlides={true}
+            autoplay={{
+              delay: 2500,
+              disableOnInteraction: false,
+            }}
+            pagination={{
+              clickable: true,
+            }}
+            navigation={true}
+            modules={[Autoplay, SwiperPagination, Navigation]}
+            className="mySwiper"
+          >
+            {currentProductImages.length > 0 ? (
+              currentProductImages.map((imageSrc, index) => (
+                <SwiperSlide key={index}>
+                  <Image
+                    src={imageSrc}
+                    alt={`Product image ${index + 1}`}
+                    width={500}
+                    height={500}
+                    className="rounded object-contain w-full h-auto"
+                  />
+                </SwiperSlide>
+              ))
+            ) : (
+              <Text>No additional images available.</Text>
+            )}
+          </Swiper>
+
+          <Flex gap="3" mt="4" justify="end">
+            <Dialog.Close>
+              <Button variant="soft" color="gray">
+                Close
+              </Button>
+            </Dialog.Close>
+          </Flex>
+        </Dialog.Content>
+      </Dialog.Root>
     </Box>
   );
 }

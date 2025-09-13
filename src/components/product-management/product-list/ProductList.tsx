@@ -9,12 +9,8 @@ import Link from 'next/link';
 import { Product, PaginatedProductsResponse } from '@/types/product';
 import { API_BASE_URL } from '@/utilities/constants';
 import NProgress from 'nprogress';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Pagination as SwiperPagination, Navigation } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/pagination';
-import 'swiper/css/navigation';
 import { toast } from 'sonner';
+import ProductDetailModal from './ProductDetailModal';
 
 interface MenuListProps {
   searchTerm: string;
@@ -77,8 +73,8 @@ export default function ProductList({
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<Product | null>(null);
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
-  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
-  const [currentProductImages, setCurrentProductImages] = useState<string[]>([]);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedProductForDetail, setSelectedProductForDetail] = useState<Product | null>(null);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ 
     key: 'created_at', 
     direction: 'desc' 
@@ -372,9 +368,9 @@ export default function ProductList({
     );
   };
 
-  const handleImageClick = (images: string[]) => {
-    setCurrentProductImages(images);
-    setIsImageModalOpen(true);
+  const handleRowClick = (item: Product) => {
+    setSelectedProductForDetail(item);
+    setIsDetailModalOpen(true);
   };
 
   // Clear cache when filters reset
@@ -502,7 +498,7 @@ export default function ProductList({
             </Table.Header>
             <Table.Body>
               {displayData.map((item) => (
-                <tr key={item.id} className="rt-TableRow cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-800">
+                <tr key={item.id} className="rt-TableRow cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-800" onClick={() => handleRowClick(item)}>
                   <td className="rt-TableCell">
                     <Checkbox
                       checked={selectedProductIds.includes(item.id)}
@@ -511,7 +507,7 @@ export default function ProductList({
                   </td>
                   <td className="rt-TableCell">{item.id}</td>
                   <td className="rt-TableCell">
-                    <Flex align="center" justify="center" className="w-8 h-8 cursor-pointer" onClick={() => handleImageClick(item.images)}>
+                    <Flex align="center" justify="center" className="w-8 h-8">
                       {item.primary_image ? (
                         <Image
                           src={item.primary_image} 
@@ -607,53 +603,11 @@ export default function ProductList({
         color="red"
       />
 
-      <Dialog.Root open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
-        <Dialog.Content style={{ maxWidth: 600 }}>
-          <Dialog.Title>Product Images</Dialog.Title>
-          <Dialog.Description size="2" mb="4">
-            All available images for this product.
-          </Dialog.Description>
-
-          <Swiper
-            spaceBetween={30}
-            centeredSlides={true}
-            autoplay={{
-              delay: 2500,
-              disableOnInteraction: false,
-            }}
-            pagination={{
-              clickable: true,
-            }}
-            navigation={true}
-            modules={[Autoplay, SwiperPagination, Navigation]}
-            className="mySwiper"
-          >
-            {currentProductImages.length > 0 ? (
-              currentProductImages.map((imageSrc, index) => (
-                <SwiperSlide key={index}>
-                  <Image
-                    src={imageSrc}
-                    alt={`Product image ${index + 1}`}
-                    width={500}
-                    height={500}
-                    className="rounded object-contain w-full h-auto"
-                  />
-                </SwiperSlide>
-              ))
-            ) : (
-              <Text>No additional images available.</Text>
-            )}
-          </Swiper>
-
-          <Flex gap="3" mt="4" justify="end">
-            <Dialog.Close>
-              <Button variant="soft" color="gray">
-                Close
-              </Button>
-            </Dialog.Close>
-          </Flex>
-        </Dialog.Content>
-      </Dialog.Root>
+      <ProductDetailModal
+        open={isDetailModalOpen}
+        onOpenChange={setIsDetailModalOpen}
+        productId={selectedProductForDetail?.id || null}
+      />
     </Box>
   );
 }

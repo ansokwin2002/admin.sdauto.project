@@ -7,12 +7,21 @@ import { ReactNode, useCallback, useEffect, useState } from "react";
 import { AppOrganizationProvider } from "@/contexts/AppOrganizationContext";
 import { Text } from "@radix-ui/themes";
 import ProgressBar from '@/components/common/ProgressBar';
+import { useRouter } from "next/navigation";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarWidth = '280px';
+  const router = useRouter();
   
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      router.push('/login');
+    }
+  }, [router]);
+
   const onScroll = useCallback(() => {
     const mainContent = document.querySelector('[data-main-content]');
     if (mainContent) {
@@ -78,4 +87,4 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </Box>
     </AppOrganizationProvider>
   );
-} 
+}

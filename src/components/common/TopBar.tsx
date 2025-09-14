@@ -6,6 +6,7 @@ import { useTheme } from "next-themes";
 import Link from "next/link";
 import { organization } from "@/data/CommonData";
 import { AppOrganizationContext } from "@/contexts/AppOrganizationContext";
+import { useRouter } from "next/navigation";
 
 interface NotificationItem {
   icon: React.ReactNode;
@@ -23,6 +24,7 @@ export default function TopBar({ isScrolled, onMenuClick }: TopBarProps) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState<boolean>(false);
   const { activeEntity, setActiveEntity } = useContext(AppOrganizationContext);
+  const router = useRouter();
 
   // Handle mounting state
   useEffect(() => {
@@ -37,6 +39,30 @@ export default function TopBar({ isScrolled, onMenuClick }: TopBarProps) {
     // Update localStorage and dispatch storage event for other components
     localStorage.setItem('theme', newTheme);
     window.dispatchEvent(new Event('storage'));
+  };
+
+  const handleLogout = async () => {
+    const token = localStorage.getItem('auth_token');
+    // IMPORTANT: Replace with your actual backend API URL
+    const apiUrl = 'http://192.168.1.2:8000/api/logout';
+
+    try {
+      if (token) {
+        await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Logout failed', error);
+    } finally {
+      // Always clear token and redirect
+      localStorage.removeItem('auth_token');
+      router.push('/login');
+    }
   };
 
   const notifications: NotificationItem[] = [
@@ -174,7 +200,7 @@ export default function TopBar({ isScrolled, onMenuClick }: TopBarProps) {
                   </Link>
                 </DropdownMenu.Item>
                 <DropdownMenu.Separator />
-                <DropdownMenu.Item className="flex items-center gap-2 text-red-500 dark:text-red-400 dark:hover:text-white !cursor-pointer" role="button" onClick={() => {}}>
+                <DropdownMenu.Item className="flex items-center gap-2 text-red-500 dark:text-red-400 dark:hover:text-white !cursor-pointer" role="button" onClick={handleLogout}>
                   <LogOut size={14} />
                   <span>Logout</span>
                 </DropdownMenu.Item>
@@ -185,4 +211,4 @@ export default function TopBar({ isScrolled, onMenuClick }: TopBarProps) {
       </Box>
     </Box>
   );
-} 
+}

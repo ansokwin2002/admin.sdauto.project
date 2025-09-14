@@ -373,7 +373,7 @@ export default function Sidebar({ width, onClose }: SidebarProps) {
       <Flex justify="between" align="center" px="2" py="5">
         <Flex justify="center" className="flex-1">
           <Link href="/">
-            <Image src={'/images/logo.png'} alt="Logo" width={130} height={20} />
+            <Image src={'/images/logo.png'} alt="Logo" width={100} height={15} />
           </Link>
         </Flex>
         <div className="lg:hidden">

@@ -50,6 +50,16 @@ function MenuContent() {
     setActiveBranchFilter(activeEntity.id === 'hq' ? null : activeEntity);
   }, [activeEntity, setActiveBranchFilter]);
 
+  useEffect(() => {
+    const shouldRefresh = searchParams.get('refresh');
+    if (shouldRefresh === 'true') {
+      setRefreshKey(prevKey => prevKey + 1);
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete('refresh');
+      router.replace(`?${params.toString()}`, undefined, { shallow: true });
+    }
+  }, [searchParams, router]);
+
   const handleAddProduct = () => {
     setAddModalOpen(true);
   };
@@ -89,7 +99,7 @@ function MenuContent() {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/products`, {
+      const response = await fetch(`${API_BASE_URL}/api/products`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',

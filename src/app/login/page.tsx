@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { API_BASE_URL } from '@/utilities/constants';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -15,7 +16,7 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL + '/api/login';
+    const apiUrl = API_BASE_URL + '/api/login';
 
     try {
       const res = await fetch(apiUrl, {

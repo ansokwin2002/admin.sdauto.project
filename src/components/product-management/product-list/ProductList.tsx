@@ -208,7 +208,7 @@ export default function ProductList({
         params.append('sort_order', sortConfig.direction);
       }
 
-      const response = await fetch(`${API_BASE_URL}/products?${params.toString()}`);
+      const response = await fetch(`${API_BASE_URL}/api/products?${params.toString()}`);
       if (!response.ok) {
         throw new Error('Failed to fetch products');
       }
@@ -292,7 +292,7 @@ export default function ProductList({
       // Single item deletion logic
       try {
         NProgress.start();
-        const response = await fetch(`${API_BASE_URL}/products/${itemToDelete.id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/products/${itemToDelete.id}`, {
           method: 'DELETE',
         });
         if (!response.ok) {
@@ -324,7 +324,7 @@ export default function ProductList({
       // Multiple items deletion logic
       try {
         NProgress.start();
-        const response = await fetch(`${API_BASE_URL}/products/bulk`, {
+        const response = await fetch(`${API_BASE_URL}/api/products/bulk`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

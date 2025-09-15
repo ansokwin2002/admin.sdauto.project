@@ -47,7 +47,7 @@ export default function ProductDetailModal({ open, onOpenChange, productId }: Pr
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`${API_BASE_URL}/products/${productId}`);
+        const response = await fetch(`${API_BASE_URL}/api/products/${productId}`);
         if (!response.ok) {
           throw new Error('Failed to fetch product details');
         }

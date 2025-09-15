@@ -7,6 +7,7 @@ import Link from "next/link";
 import { organization } from "@/data/CommonData";
 import { AppOrganizationContext } from "@/contexts/AppOrganizationContext";
 import { useRouter } from "next/navigation";
+import { API_BASE_URL } from '@/utilities/constants';
 
 interface NotificationItem {
   icon: React.ReactNode;
@@ -44,7 +45,7 @@ export default function TopBar({ isScrolled, onMenuClick }: TopBarProps) {
   const handleLogout = async () => {
     const token = localStorage.getItem('auth_token');
     // IMPORTANT: Replace with your actual backend API URL
-    const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL + '/api/logout';
+    const apiUrl = API_BASE_URL + '/api/logout';
 
     try {
       if (token) {

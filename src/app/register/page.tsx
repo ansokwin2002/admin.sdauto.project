@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { API_BASE_URL } from '@/utilities/constants';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -22,7 +23,7 @@ export default function RegisterPage() {
       return;
     }
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL + '/api/register';
+    const apiUrl = API_BASE_URL + '/api/register';
 
     try {
       const res = await fetch(apiUrl, {

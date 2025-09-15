@@ -23,7 +23,7 @@ export default function EditMenuItemPage() {
 
       NProgress.start();
       try {
-        const response = await fetch(`${API_BASE_URL}/products/${itemId}`);
+        const response = await fetch(`${API_BASE_URL}/api/products/${itemId}`);
         if (!response.ok) {
           throw new Error('Failed to fetch product');
         }
@@ -41,7 +41,7 @@ export default function EditMenuItemPage() {
   }, [itemId]);
 
   const handleBackToList = () => {
-    router.push('/product-management/product-list?tab=list');
+    router.push('/product-management/product-list?tab=list&refresh=true');
   };
 
   const handleSubmitForm = async (formData: Partial<Product> & { image_urls?: string[], images?: File[], videos?: string[] }) => {
@@ -79,7 +79,7 @@ export default function EditMenuItemPage() {
         });
       }
 
-      const response = await fetch(`${API_BASE_URL}/products/${itemId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/products/${itemId}`, {
         method: 'POST', // Use POST for FormData with PUT/PATCH method override
         headers: {
           'Accept': 'application/json',

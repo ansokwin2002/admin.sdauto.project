@@ -3,6 +3,40 @@ import { Save, X, Image as ImageIcon, Trash2, Upload, Link as LinkIcon } from 'l
 import { Product } from '@/types/product';
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
+import { API_BASE_URL } from '@/utilities/constants';
+
+const getAbsoluteImageUrl = (relativePath: string) => {
+  const PLACEHOLDER_IMAGE_URL = 'https://via.placeholder.com/100x100?text=No+Image'; // Adjusted placeholder size
+
+  if (!relativePath || typeof relativePath !== 'string' || relativePath.trim() === '') {
+    return PLACEHOLDER_IMAGE_URL;
+  }
+
+  let cleanedPath = relativePath;
+
+  // Specific fix for the observed malformed URL pattern:
+  // http://192.168.1.9:8000/storage/http://192.168.1.9:8000/storage/products/...
+  const malformedPrefix = `${API_BASE_URL}/storage/${API_BASE_URL}/storage/`;
+  if (cleanedPath.startsWith(malformedPrefix)) {
+    cleanedPath = cleanedPath.substring(malformedPrefix.length - (`${API_BASE_URL}/storage/`).length);
+    // This should result in: http://192.168.1.9:8000/storage/products/...
+  }
+
+  // If it's already an absolute URL (after potential cleaning), return it.
+  // This handles cases where the backend might send correct absolute URLs.
+  if (cleanedPath.startsWith('http://') || cleanedPath.startsWith('https://')) {
+    return cleanedPath;
+  }
+
+  try {
+    const baseUrl = new URL(API_BASE_URL);
+    const fullUrl = new URL(cleanedPath, baseUrl);
+    return fullUrl.toString();
+  } catch (e) {
+    console.error("Error constructing image URL for path:", relativePath, e);
+    return PLACEHOLDER_IMAGE_URL;
+  }
+};
 
 interface ProductFormProps {
   selectedItem: Partial<Product> | null;
@@ -76,9 +110,18 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: ProductF
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const urlList = imageUrls.split('\n').filter(url => url.trim() !== '');
+
+    // Filter imagePreviews to get only actual URLs (excluding blob URLs for new files)
+    const currentImageUrls = imagePreviews.filter(url => !url.startsWith('blob:'));
+
     const videoUrlsToSubmit = videoUrls.split('\n').filter(url => url.trim() !== '');
-    onSubmit({ ...formData, image_urls: urlList, images: imageFiles, videos: videoUrlsToSubmit });
+
+    onSubmit({
+      ...formData,
+      image_urls: currentImageUrls, // This will now send all existing and newly added URLs
+      images: imageFiles, // This sends newly uploaded files
+      videos: videoUrlsToSubmit
+    });
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -245,7 +288,7 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: ProductF
                     {imagePreviews.map((image, index) => (
                       <Box key={index} className="relative">
                         <Image 
-                          src={image} 
+                          src={getAbsoluteImageUrl(image)} 
                           alt={`Product image ${index + 1}`} 
                           width={100}
                           height={100}

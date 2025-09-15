@@ -44,7 +44,7 @@ export default function TopBar({ isScrolled, onMenuClick }: TopBarProps) {
   const handleLogout = async () => {
     const token = localStorage.getItem('auth_token');
     // IMPORTANT: Replace with your actual backend API URL
-    const apiUrl = 'http://192.168.1.2:8000/api/logout';
+    const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL + '/api/logout';
 
     try {
       if (token) {

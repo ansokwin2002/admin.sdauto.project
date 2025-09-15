@@ -22,7 +22,7 @@ export default function RegisterPage() {
       return;
     }
 
-    const apiUrl = 'http://192.168.1.2:8000/api/register';
+    const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL + '/api/register';
 
     try {
       const res = await fetch(apiUrl, {
@@ -61,10 +61,10 @@ export default function RegisterPage() {
     <div className="flex items-center justify-center min-h-screen bg-[#0a0a0a]">
       <div className="w-full max-w-md p-8 space-y-6 bg-[#171717] rounded-lg shadow-md">
         <img src="/images/logo.png" alt="Logo" className="mx-auto h-16 w-auto" />
-        <h1 className="text-2xl font-bold text-center text-gray-900 dark:text-white">Create an Account</h1>
+        <h1 className="text-2xl font-bold text-center text-white">Create an Account</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="name" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="name" className="text-sm font-medium text-white">
               Name
             </label>
             <input
@@ -72,13 +72,13 @@ export default function RegisterPage() {
               name="name"
               type="text"
               required
-              className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 bg-[#0a0a0a] border-gray-600 placeholder-gray-400 text-white"
+              className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 bg-[#0a0a0a] border-gray-600 placeholder-gray-200 text-white"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
           </div>
           <div>
-            <label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="email" className="text-sm font-medium text-white">
               Email address
             </label>
             <input
@@ -87,13 +87,13 @@ export default function RegisterPage() {
               type="email"
               autoComplete="email"
               required
-              className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 bg-[#0a0a0a] border-gray-600 placeholder-gray-400 text-white"
+              className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 bg-[#0a0a0a] border-gray-600 placeholder-gray-200 text-white"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
           <div>
-            <label htmlFor="password" aria-label="Password" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="password" aria-label="Password" className="text-sm font-medium text-white">
               Password
             </label>
             <input
@@ -101,13 +101,13 @@ export default function RegisterPage() {
               name="password"
               type="password"
               required
-              className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 bg-[#0a0a0a] border-gray-600 placeholder-gray-400 text-white"
+              className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 bg-[#0a0a0a] border-gray-600 placeholder-gray-200 text-white"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
           <div>
-            <label htmlFor="password-confirmation" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="password-confirmation" className="text-sm font-medium text-white">
               Confirm Password
             </label>
             <input
@@ -115,7 +115,7 @@ export default function RegisterPage() {
               name="password_confirmation"
               type="password"
               required
-              className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 bg-[#0a0a0a] border-gray-600 placeholder-gray-400 text-white"
+              className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 bg-[#0a0a0a] border-gray-600 placeholder-gray-200 text-white"
               value={passwordConfirmation}
               onChange={(e) => setPasswordConfirmation(e.target.value)}
             />

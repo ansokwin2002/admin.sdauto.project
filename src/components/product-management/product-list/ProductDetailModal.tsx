@@ -5,6 +5,40 @@ import Image from 'next/image';
 import { Product } from '@/types/product';
 import { X, Tag, DollarSign, Package, CheckCircle, XCircle, Info, Scale } from 'lucide-react';
 import { API_BASE_URL } from '@/utilities/constants';
+
+const getAbsoluteImageUrl = (relativePath: string) => {
+  const PLACEHOLDER_IMAGE_URL = 'https://via.placeholder.com/800x600?text=No+Image';
+
+  if (!relativePath || typeof relativePath !== 'string' || relativePath.trim() === '') {
+    return PLACEHOLDER_IMAGE_URL;
+  }
+
+  // Normalize the relativePath by removing any leading API_BASE_URL if it's already there
+  let cleanedPath = relativePath;
+  const apiBaseUrlWithStorage = `${API_BASE_URL}/storage/`;
+  if (cleanedPath.startsWith(apiBaseUrlWithStorage)) {
+    // Remove the duplicated API_BASE_URL/storage/ part
+    cleanedPath = cleanedPath.substring(apiBaseUrlWithStorage.length);
+  }
+  // Also handle if it just starts with API_BASE_URL
+  if (cleanedPath.startsWith(API_BASE_URL)) {
+    cleanedPath = cleanedPath.substring(API_BASE_URL.length);
+  }
+
+  // Ensure cleanedPath does not start with a slash if API_BASE_URL does not end with one
+  if (cleanedPath.startsWith('/') && !API_BASE_URL.endsWith('/')) {
+    cleanedPath = cleanedPath.substring(1);
+  }
+
+  try {
+    const baseUrl = new URL(API_BASE_URL);
+    const fullUrl = new URL(cleanedPath, baseUrl);
+    return fullUrl.toString();
+  } catch (e) {
+    console.error("Error constructing image URL for path:", relativePath, e);
+    return PLACEHOLDER_IMAGE_URL;
+  }
+};
 import { useState, useEffect } from 'react';
 import NProgress from 'nprogress';
 import { toast } from 'sonner';
@@ -108,7 +142,7 @@ export default function ProductDetailModal({ open, onOpenChange, productId }: Pr
                           {product.images.map((img, index) => (
                             <SwiperSlide key={index}>
                               <Image
-                                src={img}
+                                src={getAbsoluteImageUrl(img)}
                                 alt={`${product.name} image ${index + 1}`}
                                 width={800} // Larger width for hero image
                                 height={600} // Larger height for hero image

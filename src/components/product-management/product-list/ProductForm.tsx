@@ -1,9 +1,22 @@
 import { Box, Button, Card, Flex, Grid, Text, TextField, Select, TextArea, RadioGroup, Dialog, IconButton } from '@radix-ui/themes';
 import { Save, X, Image as ImageIcon, Trash2, Upload, Link as LinkIcon } from 'lucide-react';
 import { Product } from '@/types/product';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import { API_BASE_URL } from '@/utilities/constants';
+import NProgress from 'nprogress';
+import { toast } from 'sonner';
+
+const cleanImageUrl = (url: string): string => {
+  if (typeof url !== 'string' || !url.includes('/storage/products/')) {
+    return url;
+  }
+  const storageMarker = '/storage/products/';
+  const parts = url.split(storageMarker);
+  const lastPart = parts[parts.length - 1];
+  
+  return `${API_BASE_URL}${storageMarker}${lastPart}`;
+};
 
 const getAbsoluteImageUrl = (relativePath: string) => {
   const PLACEHOLDER_IMAGE_URL = 'https://via.placeholder.com/100x100?text=No+Image'; // Adjusted placeholder size
@@ -41,7 +54,7 @@ const getAbsoluteImageUrl = (relativePath: string) => {
 interface ProductFormProps {
   selectedItem: Partial<Product> | null;
   onBack: () => void;
-  onSubmit: (formData: Partial<Product> & { image_urls?: string[], images?: File[], videos?: string[] }) => void;
+  onSubmit: (formData: Partial<Product> & { image_urls?: string[], images?: File[], videos?: string[], deleted_images?: string[] }) => void;
 }
 
 export default function ProductForm({ selectedItem, onBack, onSubmit }: ProductFormProps) {
@@ -58,7 +71,13 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: ProductF
     is_active: selectedItem?.is_active ?? true,
   });
   const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>(selectedItem?.images || []);
+
+  const cleanedImages = useMemo(() => {
+    return (selectedItem?.images || []).map(cleanImageUrl);
+  }, [selectedItem?.images]);
+
+  const [imagePreviews, setImagePreviews] = useState<string[]>(cleanedImages);
+  const [imagesToDelete, setImagesToDelete] = useState<string[]>([]);
   const [imageUrls, setImageUrls] = useState<string>('');
   const [isUrlModalOpen, setUrlModalOpen] = useState(false);
   const [videoUrls, setVideoUrls] = useState<string>(
@@ -68,6 +87,10 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: ProductF
   const [isVideoUrlModalOpen, setVideoUrlModalOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setImagePreviews(cleanedImages);
+  }, [cleanedImages]);
 
   // Helper to get YouTube embed URL
   const getYouTubeEmbedUrl = (url: string) => {
@@ -120,7 +143,8 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: ProductF
       ...formData,
       image_urls: currentImageUrls, // This will now send all existing and newly added URLs
       images: imageFiles, // This sends newly uploaded files
-      videos: videoUrlsToSubmit
+      videos: videoUrlsToSubmit,
+      deleted_images: imagesToDelete,
     });
   };
 
@@ -134,12 +158,28 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: ProductF
     }
   };
 
-  const handleRemoveImage = (index: number) => {
-    setImageFiles(prev => prev.filter((_, i) => i !== index));
-    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+  const handleRemoveImage = (e: React.MouseEvent<HTMLButtonElement>, index: number) => {
+    e.preventDefault();
+    const imageUrlToRemove = imagePreviews[index];
+
+    if (imageUrlToRemove.startsWith('blob:')) {
+      // This is a new image, just remove it from the local state
+      const blobUrls = imagePreviews.filter(url => url.startsWith('blob:'));
+      const blobIndex = blobUrls.indexOf(imageUrlToRemove);
+
+      if (blobIndex > -1) {
+        setImageFiles(prev => prev.filter((_, i) => i !== blobIndex));
+      }
+      setImagePreviews(prev => prev.filter((_, i) => i !== index));
+    } else {
+      // This is an existing image, add it to the deletion queue
+      setImagesToDelete(prev => [...prev, imageUrlToRemove]);
+      setImagePreviews(prev => prev.filter((_, i) => i !== index));
+    }
   };
 
-  const handleRemoveVideo = (index: number) => {
+  const handleRemoveVideo = (e: React.MouseEvent<HTMLButtonElement>, index: number) => {
+    e.preventDefault();
     setVideoPreviews(prev => prev.filter((_, i) => i !== index));
   };
 
@@ -157,6 +197,8 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: ProductF
     setVideoUrls(''); // Clear the textarea
     setVideoUrlModalOpen(false);
   };
+
+
 
   return (
     <Box>
@@ -262,10 +304,11 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: ProductF
                           className="absolute top-0 left-0 w-full h-full rounded"
                         ></iframe>
                         <IconButton 
+                          type="button"
                           size="1" 
                           color="red" 
                           variant="solid" 
-                          onClick={() => handleRemoveVideo(index)}
+                          onClick={(e) => handleRemoveVideo(e, index)}
                           style={{ position: 'absolute', top: 4, right: 4, cursor: 'pointer' }}
                         >
                           <Trash2 size={12} />
@@ -289,16 +332,17 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: ProductF
                       <Box key={index} className="relative">
                         <Image 
                           src={getAbsoluteImageUrl(image)} 
-                          alt={`Product image ${index + 1}`} 
+                          alt={`Product image ${index + 1}`}
                           width={100}
                           height={100}
                           className="rounded object-cover w-full h-full"
                         />
                         <IconButton 
+                          type="button"
                           size="1" 
                           color="red" 
                           variant="solid" 
-                          onClick={() => handleRemoveImage(index)}
+                          onClick={(e) => handleRemoveImage(e, index)}
                           style={{ position: 'absolute', top: 4, right: 4, cursor: 'pointer' }}
                         >
                           <Trash2 size={12} />

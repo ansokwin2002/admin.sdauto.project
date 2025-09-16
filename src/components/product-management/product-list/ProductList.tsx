@@ -557,7 +557,7 @@ export default function ProductList({
                       {item.stock_status.replace('_', ' ')}
                     </Badge>
                   </td>
-                  <td className="rt-TableCell" align="right">
+                  <td className="rt-TableCell" align="right" onClick={(e) => e.stopPropagation()}>
                     <Flex gap="3" justify="end">
                       <Link href={`/product-management/product-list/${item.id}`}>
                         <IconButton variant="ghost" size="1" color="gray">

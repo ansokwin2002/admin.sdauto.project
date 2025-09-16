@@ -44,7 +44,7 @@ export default function EditMenuItemPage() {
     router.push('/product-management/product-list?tab=list&refresh=true');
   };
 
-  const handleSubmitForm = async (formData: Partial<Product> & { image_urls?: string[], images?: File[], videos?: string[] }) => {
+  const handleSubmitForm = async (formData: Partial<Product> & { image_urls?: string[], images?: File[], videos?: string[], deleted_images?: string[] }) => {
     NProgress.start();
     try {
       const productFormData = new FormData();
@@ -56,7 +56,7 @@ export default function EditMenuItemPage() {
           if (value !== '' && value !== null && value !== undefined) {
             productFormData.append(key, value as string);
           }
-        } else if (key !== 'images' && key !== 'image_urls' && key !== 'videos') {
+        } else if (key !== 'images' && key !== 'image_urls' && key !== 'videos' && key !== 'deleted_images') {
           productFormData.append(key, value as string);
         }
       });
@@ -76,6 +76,12 @@ export default function EditMenuItemPage() {
       if (formData.videos) {
         formData.videos.forEach(url => {
           productFormData.append('videos[]', url);
+        });
+      }
+
+      if (formData.deleted_images) {
+        formData.deleted_images.forEach(url => {
+          productFormData.append('deleted_images[]', url);
         });
       }
 

@@ -67,18 +67,18 @@ function MenuContent() {
   const handleProductAdd = async (product: Partial<Product> & { image_urls?: string[], images?: File[], videos?: string[] }) => {
     const formData = new FormData();
 
-    Object.entries(product).forEach(([key, value]) => {
-      if (key === 'is_active') {
-        formData.append(key, value ? '1' : '0');
-      } else if (key === 'category') {
-        if (value !== '' && value !== null && value !== undefined) {
-          formData.append(key, value as string);
-        }
-      }
-      else if (key !== 'images' && key !== 'image_urls' && key !== 'videos') {
-        formData.append(key, value as string);
-      }
-    });
+    formData.append('name', product.name || '');
+    formData.append('brand', product.brand || '');
+    if (product.category) {
+      formData.append('category', product.category);
+    }
+    formData.append('part_number', product.part_number || '');
+    formData.append('condition', product.condition || 'New');
+    formData.append('quantity', product.quantity?.toString() || '0');
+    formData.append('price', product.price || '0');
+    formData.append('original_price', product.original_price || '0');
+    formData.append('description', product.description || '');
+    formData.append('is_active', product.is_active ? '1' : '0');
 
     if (product.image_urls) {
       product.image_urls.forEach(url => {
@@ -87,8 +87,8 @@ function MenuContent() {
     }
 
     if (product.images) {
-      product.images.forEach(file => {
-        formData.append('images[]', file);
+      product.images.forEach((file, index) => {
+        formData.append(`images[${index}]`, file);
       });
     }
 

@@ -309,9 +309,9 @@ export default function ProductList({
         if (!response.ok) {
           throw new Error('Failed to delete product');
         }
-        toast.success('Product deleted successfully!', { duration: Infinity, closeButton: true });
+        toast.success('Product deleted successfully!');
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : 'An unknown error occurred', { duration: Infinity, closeButton: true });
+        toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
       } finally {
         NProgress.done();
       }
@@ -347,7 +347,7 @@ export default function ProductList({
           const errorMessage = errorData.message || 'Failed to delete selected products';
           throw new Error(errorMessage);
         }
-        toast.success('Selected products deleted successfully!', { duration: Infinity, closeButton: true });
+        toast.success('Selected products deleted successfully!');
       } catch (error) {
         toast.error(error instanceof Error ? error.message : 'An unknown error occurred', { duration: Infinity, closeButton: true });
       } finally {

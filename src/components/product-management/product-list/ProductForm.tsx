@@ -6,6 +6,9 @@ import Image from 'next/image';
 import { API_BASE_URL } from '@/utilities/constants';
 import NProgress from 'nprogress';
 import { toast } from 'sonner';
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
 
 const cleanImageUrl = (url: string): string => {
   if (typeof url !== 'string' || !url.includes('/storage/products/')) {
@@ -19,12 +22,26 @@ const cleanImageUrl = (url: string): string => {
 };
 
 const getAbsoluteImageUrl = (relativePath: string) => {
-  const PLACEHOLDER_IMAGE_URL = 'https://via.placeholder.com/100x100?text=No+Image'; // Adjusted placeholder size
+  const PLACEHOLDER_IMAGE_URL = 'https://via.placeholder.com/100x100?text=No+Image';
 
   if (!relativePath || typeof relativePath !== 'string' || relativePath.trim() === '') {
     return PLACEHOLDER_IMAGE_URL;
   }
 
+  // Priority 1: Check for valid absolute URLs that next/image can handle directly.
+  if (relativePath.startsWith('blob:') || relativePath.startsWith('data:') || relativePath.startsWith('http')) {
+    return relativePath;
+  }
+
+  // Priority 2: Fix for malformed URLs that might contain an absolute URL within the string
+  // (e.g., "storage/https://picsum.photos...")
+  const urlRegex = /(https?:\/\/[^\s]+)/;
+  const matches = relativePath.match(urlRegex);
+  if (matches) {
+    return matches[0];
+  }
+
+  // Priority 3: Handle relative paths from our own API.
   let cleanedPath = relativePath;
 
   // Specific fix for the observed malformed URL pattern:
@@ -32,13 +49,6 @@ const getAbsoluteImageUrl = (relativePath: string) => {
   const malformedPrefix = `${API_BASE_URL}/storage/${API_BASE_URL}/storage/`;
   if (cleanedPath.startsWith(malformedPrefix)) {
     cleanedPath = cleanedPath.substring(malformedPrefix.length - (`${API_BASE_URL}/storage/`).length);
-    // This should result in: http://192.168.1.9:8000/storage/products/...
-  }
-
-  // If it's already an absolute URL (after potential cleaning), return it.
-  // This handles cases where the backend might send correct absolute URLs.
-  if (cleanedPath.startsWith('http://') || cleanedPath.startsWith('https://')) {
-    return cleanedPath;
   }
 
   try {
@@ -55,9 +65,12 @@ interface ProductFormProps {
   selectedItem: Partial<Product> | null;
   onBack: () => void;
   onSubmit: (formData: Partial<Product> & { image_urls?: string[], images?: File[], videos?: string[], deleted_images?: string[] }) => void;
+  onLightboxChange?: (isOpen: boolean) => void;
 }
 
-export default function ProductForm({ selectedItem, onBack, onSubmit }: ProductFormProps) {
+const MAX_IMAGES = 20;
+
+export default function ProductForm({ selectedItem, onBack, onSubmit, onLightboxChange }: ProductFormProps) {
   const [formData, setFormData] = useState<Partial<Product>>({
     name: selectedItem?.name || '',
     brand: selectedItem?.brand || '',
@@ -80,11 +93,27 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: ProductF
   const [imagesToDelete, setImagesToDelete] = useState<string[]>([]);
   const [imageUrls, setImageUrls] = useState<string>('');
   const [isUrlModalOpen, setUrlModalOpen] = useState(false);
-  const [videoUrls, setVideoUrls] = useState<string>(
-    selectedItem?.videos ? selectedItem.videos.join('\n') : ''
-  );
-  const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
+  const [videoUrls, setVideoUrls] = useState<string>('');
+  const [originalVideoUrls, setOriginalVideoUrls] = useState<string[]>([]);
   const [isVideoUrlModalOpen, setVideoUrlModalOpen] = useState(false);
+  const [priceError, setPriceError] = useState<string | null>(null);
+  const [isLightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+
+  useEffect(() => {
+    onLightboxChange?.(isLightboxOpen);
+  }, [isLightboxOpen, onLightboxChange]);
+
+  useEffect(() => {
+    const originalPrice = parseFloat(formData.original_price as string);
+    const currentPrice = parseFloat(formData.price as string);
+
+    if (originalPrice > 0 && currentPrice > originalPrice) {
+      setPriceError('The current price cannot be higher than the original price.');
+    } else {
+      setPriceError(null);
+    }
+  }, [formData.price, formData.original_price]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -102,48 +131,62 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: ProductF
     return null;
   };
 
-  // Populate video previews from selectedItem
+  // Populate video URLs from selectedItem
   useEffect(() => {
     if (selectedItem?.videos) {
       let videosArray: string[] = [];
-      // Check if selectedItem.videos is already an array
       if (Array.isArray(selectedItem.videos)) {
         videosArray = selectedItem.videos;
       } else if (typeof selectedItem.videos === 'string') {
-        // Attempt to parse if it's a JSON string
         try {
           const parsedVideos = JSON.parse(selectedItem.videos);
           if (Array.isArray(parsedVideos)) {
             videosArray = parsedVideos;
           }
         } catch (e) {
-          // Not a valid JSON string, treat as single URL if needed or log error
           console.error("Failed to parse selectedItem.videos as JSON array:", e);
-          // Optionally, if it's a single URL string not in an array, handle it
-          // videosArray = [selectedItem.videos];
         }
       }
 
-      const validEmbedUrls = videosArray.map(url => getYouTubeEmbedUrl(url)).filter(Boolean) as string[];
-      setVideoPreviews(validEmbedUrls);
+      // Convert video IDs to full YouTube URLs
+      const fullUrls = videosArray
+        .map(videoId => {
+          if (!videoId) return null;
+          const trimmedVideoId = videoId.trim();
+          if (!trimmedVideoId) return null;
+
+          if (!trimmedVideoId.startsWith('http')) {
+            return `https://www.youtube.com/watch?v=${trimmedVideoId}`;
+          }
+          return trimmedVideoId;
+        })
+        .filter(Boolean) as string[];
+
+      setOriginalVideoUrls(fullUrls);
     } else {
-      setVideoPreviews([]); // Clear previews if no videos
+      setOriginalVideoUrls([]);
     }
   }, [selectedItem]);
+
+  const videoPreviews = useMemo(() => {
+    return originalVideoUrls.map(url => getYouTubeEmbedUrl(url)).filter(Boolean) as string[];
+  }, [originalVideoUrls]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Filter imagePreviews to get only actual URLs (excluding blob URLs for new files)
-    const currentImageUrls = imagePreviews.filter(url => !url.startsWith('blob:'));
+    if (priceError) {
+      toast.error(priceError);
+      return;
+    }
 
-    const videoUrlsToSubmit = videoUrls.split('\n').filter(url => url.trim() !== '');
+    const currentImageUrls = imagePreviews.filter(url => !url.startsWith('blob:'));
 
     onSubmit({
       ...formData,
-      image_urls: currentImageUrls, // This will now send all existing and newly added URLs
-      images: imageFiles, // This sends newly uploaded files
-      videos: videoUrlsToSubmit,
+      image_urls: currentImageUrls,
+      images: imageFiles,
+      videos: originalVideoUrls,
       deleted_images: imagesToDelete,
     });
   };
@@ -151,19 +194,35 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: ProductF
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
+      const currentImageCount = imagePreviews.length;
+      if (currentImageCount >= MAX_IMAGES) {
+        toast.error(`You can upload a maximum of ${MAX_IMAGES} images.`);
+        return;
+      }
+
       const newFiles = Array.from(files);
-      setImageFiles(prev => [...prev, ...newFiles]);
-      const newPreviews = newFiles.map(file => URL.createObjectURL(file));
-      setImagePreviews(prev => [...prev, ...newPreviews]);
+      const totalAfterAdd = currentImageCount + newFiles.length;
+
+      if (totalAfterAdd > MAX_IMAGES) {
+        toast.error(`You can only add ${MAX_IMAGES - currentImageCount} more image(s).`);
+        const filesToAdd = newFiles.slice(0, MAX_IMAGES - currentImageCount);
+        setImageFiles(prev => [...prev, ...filesToAdd]);
+        const newPreviews = filesToAdd.map(file => URL.createObjectURL(file));
+        setImagePreviews(prev => [...prev, ...newPreviews]);
+      } else {
+        setImageFiles(prev => [...prev, ...newFiles]);
+        const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+        setImagePreviews(prev => [...prev, ...newPreviews]);
+      }
     }
   };
 
   const handleRemoveImage = (e: React.MouseEvent<HTMLButtonElement>, index: number) => {
+    e.stopPropagation();
     e.preventDefault();
     const imageUrlToRemove = imagePreviews[index];
 
     if (imageUrlToRemove.startsWith('blob:')) {
-      // This is a new image, just remove it from the local state
       const blobUrls = imagePreviews.filter(url => url.startsWith('blob:'));
       const blobIndex = blobUrls.indexOf(imageUrlToRemove);
 
@@ -172,33 +231,46 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: ProductF
       }
       setImagePreviews(prev => prev.filter((_, i) => i !== index));
     } else {
-      // This is an existing image, add it to the deletion queue
       setImagesToDelete(prev => [...prev, imageUrlToRemove]);
       setImagePreviews(prev => prev.filter((_, i) => i !== index));
     }
   };
 
   const handleRemoveVideo = (e: React.MouseEvent<HTMLButtonElement>, index: number) => {
+    e.stopPropagation();
     e.preventDefault();
-    setVideoPreviews(prev => prev.filter((_, i) => i !== index));
+    setOriginalVideoUrls(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleAddUrls = () => {
     const urlList = imageUrls.split('\n').filter(url => url.trim() !== '');
-    setImagePreviews(prev => [...prev, ...urlList]);
+    const currentImageCount = imagePreviews.length;
+
+    if (currentImageCount >= MAX_IMAGES) {
+      toast.error(`You can have a maximum of ${MAX_IMAGES} images.`);
+      return;
+    }
+
+    const totalAfterAdd = currentImageCount + urlList.length;
+
+    if (totalAfterAdd > MAX_IMAGES) {
+      toast.error(`You can only add ${MAX_IMAGES - currentImageCount} more image(s).`);
+      const urlsToAdd = urlList.slice(0, MAX_IMAGES - currentImageCount);
+      setImagePreviews(prev => [...prev, ...urlsToAdd]);
+    } else {
+      setImagePreviews(prev => [...prev, ...urlList]);
+    }
+
     setImageUrls('');
     setUrlModalOpen(false);
   };
 
   const handleAddVideoUrls = () => {
     const urls = videoUrls.split('\n').filter(url => url.trim() !== '');
-    const newEmbedUrls = urls.map(url => getYouTubeEmbedUrl(url)).filter(Boolean) as string[];
-    setVideoPreviews(prev => [...prev, ...newEmbedUrls]);
-    setVideoUrls(''); // Clear the textarea
+    setOriginalVideoUrls(prev => [...prev, ...urls]);
+    setVideoUrls('');
     setVideoUrlModalOpen(false);
   };
-
-
 
   return (
     <Box>
@@ -272,6 +344,7 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: ProductF
                       <TextField.Slot>$</TextField.Slot>
                     </TextField.Root>
                   </Flex>
+                  {priceError && <Text size="1" color="red" className="col-span-2">{priceError}</Text>}
                   <Flex direction="column" gap="1">
                     <Text as="label" size="2" weight="medium">Quantity</Text>
                     <TextField.Root
@@ -325,14 +398,22 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: ProductF
               </Flex>
 
               <Flex direction="column" gap="1">
-                <Text as="label" size="2" weight="medium">Images</Text>
+                <Text as="label" size="2" weight="medium">Images ({imagePreviews.length}/{MAX_IMAGES})</Text>
                 <Card>
                   <Grid columns="4" gap="2">
                     {imagePreviews.map((image, index) => (
-                      <Box key={index} className="relative">
+                      <Box 
+                        key={index} 
+                        className="relative"
+                        onClick={() => {
+                          setLightboxIndex(index);
+                          setLightboxOpen(true);
+                        }}
+                        style={{ cursor: 'pointer' }}
+                      >
                         <Image 
                           src={getAbsoluteImageUrl(image)} 
-                          alt={`Product image ${index + 1}`}
+                          alt={`Product image ${index + 1}`} 
                           width={100}
                           height={100}
                           className="rounded object-cover w-full h-full"
@@ -461,7 +542,7 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: ProductF
           <TextArea
             value={videoUrls}
             onChange={(e) => setVideoUrls(e.target.value)}
-            placeholder="https://example.com/video1.mp4\nhttps://example.com/video2.mp4"
+            placeholder="https://www.youtube.com/watch?v=...\nhttps://youtu.be/..."
             rows={5}
           />
           <Flex gap="3" mt="4" justify="end">
@@ -472,6 +553,16 @@ export default function ProductForm({ selectedItem, onBack, onSubmit }: ProductF
           </Flex>
         </Dialog.Content>
       </Dialog.Root>
+
+      <Lightbox
+        open={isLightboxOpen}
+        close={() => setLightboxOpen(false)}
+        slides={imagePreviews.map(src => ({ src: getAbsoluteImageUrl(src) }))}
+        index={lightboxIndex}
+        on={{ view: ({ index: currentIndex }) => setLightboxIndex(currentIndex) }}
+        plugins={[Zoom]}
+        closeOnBackdropClick={false}
+      />
     </Box>
   );
 }

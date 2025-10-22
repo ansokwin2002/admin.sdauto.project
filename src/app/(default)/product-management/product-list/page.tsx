@@ -93,9 +93,12 @@ function MenuContent() {
     }
 
     if (product.videos) {
-        product.videos.forEach(url => {
-            formData.append('videos[]', url);
+      const validVideos = product.videos.filter(url => url && url.trim() !== '');
+      if (validVideos.length > 0) {
+        validVideos.forEach(url => {
+          formData.append('videos[]', url);
         });
+      }
     }
 
     try {
@@ -119,7 +122,7 @@ function MenuContent() {
       }
 
       const result = await response.json();
-      toast.success(result.message || 'Product added successfully!', { duration: Infinity, closeButton: true });
+      toast.success(result.message || 'Product added successfully!');
       setAddModalOpen(false);
       setRefreshKey(prevKey => prevKey + 1);
     } catch (error) {

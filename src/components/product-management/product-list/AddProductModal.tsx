@@ -1,9 +1,9 @@
-
 'use client';
 
 import { Dialog, Button, Flex } from '@radix-ui/themes';
 import ProductForm from './ProductForm';
 import { Product } from '@/types/product';
+import { useState } from 'react';
 
 interface AddProductModalProps {
   open: boolean;
@@ -12,13 +12,15 @@ interface AddProductModalProps {
 }
 
 export default function AddProductModal({ open, onOpenChange, onProductAdd }: AddProductModalProps) {
+  const [isGalleryShowing, setIsGalleryShowing] = useState(false);
+
   const handleFormSubmit = (formData: Partial<Product>) => {
     onProductAdd(formData);
     onOpenChange(false);
   };
 
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+    <Dialog.Root open={open} onOpenChange={onOpenChange} modal={!isGalleryShowing}>
       <Dialog.Content style={{ maxWidth: 1200 }}>
         <Dialog.Title>Add New Product</Dialog.Title>
         <Dialog.Description size="2" mb="4">
@@ -29,6 +31,7 @@ export default function AddProductModal({ open, onOpenChange, onProductAdd }: Ad
           selectedItem={null}
           onBack={() => onOpenChange(false)}
           onSubmit={handleFormSubmit}
+          onLightboxChange={setIsGalleryShowing}
         />
       </Dialog.Content>
     </Dialog.Root>

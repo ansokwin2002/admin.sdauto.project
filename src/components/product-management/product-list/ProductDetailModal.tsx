@@ -47,6 +47,10 @@ import { Autoplay, Pagination as SwiperPagination, Navigation } from 'swiper/mod
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
+import "yet-another-react-lightbox/plugins/captions.css";
 
 // Helper to get YouTube embed URL
 const getYouTubeEmbedUrl = (url: string) => {
@@ -68,37 +72,45 @@ export default function ProductDetailModal({ open, onOpenChange, productId }: Pr
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isLightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+
+  useEffect(() => {
+    if (!open) {
+      // Reset state when the modal is closed to ensure a clean slate on next open
+      setProduct(null);
+      setLightboxOpen(false);
+      setLightboxIndex(0);
+    }
+  }, [open]);
 
   useEffect(() => {
     const fetchProductDetails = async () => {
-      if (!productId) {
-        setProduct(null);
-        setLoading(false);
-        return;
-      }
-
-      NProgress.start();
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/products/${productId}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch product details');
+      // Only fetch if the modal is open and there is a product ID
+      if (open && productId) {
+        NProgress.start();
+        setLoading(true);
+        setError(null);
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/products/${productId}`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch product details');
+          }
+          const data = await response.json();
+          setProduct(data.data);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'An unknown error occurred');
+          toast.error(err instanceof Error ? err.message : 'An unknown error occurred');
+          setProduct(null);
+        } finally {
+          setLoading(false);
+          NProgress.done();
         }
-        const data = await response.json();
-        setProduct(data.data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
-        toast.error(err instanceof Error ? err.message : 'An unknown error occurred', { duration: Infinity, closeButton: true });
-        setProduct(null);
-      } finally {
-        setLoading(false);
-        NProgress.done();
       }
     };
 
     fetchProductDetails();
-  }, [productId]);
+  }, [productId, open]);
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -142,6 +154,11 @@ export default function ProductDetailModal({ open, onOpenChange, productId }: Pr
                           {product.images.map((img, index) => (
                             <SwiperSlide key={index}>
                               <Image
+                                onClick={() => {
+                                  setLightboxIndex(index);
+                                  setLightboxOpen(true);
+                                }}
+                                style={{ cursor: 'pointer' }}
                                 src={getAbsoluteImageUrl(img)}
                                 alt={`${product.name} image ${index + 1}`}
                                 width={800} // Larger width for hero image
@@ -278,6 +295,23 @@ export default function ProductDetailModal({ open, onOpenChange, productId }: Pr
             </Button>
           </Dialog.Close>
         </Flex>
+
+        {product && (
+          <Lightbox
+            open={isLightboxOpen}
+            close={() => setLightboxOpen(false)}
+            slides={product.images.map(src => ({ src: getAbsoluteImageUrl(src) }))}
+            index={lightboxIndex}
+            on={{ view: ({ index: currentIndex }) => setLightboxIndex(currentIndex) }}
+            plugins={[Zoom]}
+            carousel={{ finite: product.images.length <= 1 }}
+            controller={{ closeOnBackdropClick: false }}
+            render={{
+              buttonPrev: product.images.length <= 1 ? () => null : undefined,
+              buttonNext: product.images.length <= 1 ? () => null : undefined,
+            }}
+          />
+        )}
       </Dialog.Content>
     </Dialog.Root>
   );

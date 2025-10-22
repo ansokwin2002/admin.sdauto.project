@@ -30,7 +30,7 @@ export default function EditMenuItemPage() {
         const data = await response.json();
         setSelectedItem(data.data); // Assuming API returns { data: Product }
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : 'An unknown error occurred', { duration: Infinity, closeButton: true });
+        toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
         setSelectedItem(null); // Indicate not found or error
       } finally {
         NProgress.done();
@@ -74,9 +74,12 @@ export default function EditMenuItemPage() {
       }
 
       if (formData.videos) {
-        formData.videos.forEach(url => {
-          productFormData.append('videos[]', url);
-        });
+        const validVideos = formData.videos.filter(url => url && url.trim() !== '');
+        if (validVideos.length > 0) {
+          validVideos.forEach(url => {
+            productFormData.append('videos[]', url);
+          });
+        }
       }
 
       if (formData.deleted_images) {
@@ -98,7 +101,7 @@ export default function EditMenuItemPage() {
         const errorData = await response.json();
         if (response.status === 422) {
           const messages = Object.values(errorData.errors).flat();
-          toast.error(messages.join('\n'), { duration: Infinity, closeButton: true });
+          toast.error(messages.join('\n'));
         } else {
           throw new Error(errorData.message || 'Failed to update product');
         }
@@ -106,7 +109,7 @@ export default function EditMenuItemPage() {
       }
 
       const result = await response.json();
-      toast.success(result.message || 'Product updated successfully!', { duration: Infinity, closeButton: true });
+      toast.success(result.message || 'Product updated successfully!');
       handleBackToList();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'An unknown error occurred', { duration: Infinity, closeButton: true });

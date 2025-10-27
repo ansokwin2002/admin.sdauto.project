@@ -2,7 +2,7 @@ import React from 'react'
 import { Box, Card, Checkbox, Flex, Heading, Text } from '@radix-ui/themes'
 
 export const metadata = {
-  title: "Checkbox | EatlyPOS",
+  title: "Checkbox | SDAUTO",
 }
 
 export default function CheckboxElement() {

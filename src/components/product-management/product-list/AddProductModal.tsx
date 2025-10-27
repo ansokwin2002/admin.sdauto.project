@@ -13,14 +13,21 @@ interface AddProductModalProps {
 
 export default function AddProductModal({ open, onOpenChange, onProductAdd }: AddProductModalProps) {
   const [isGalleryShowing, setIsGalleryShowing] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleFormSubmit = (formData: Partial<Product>) => {
-    onProductAdd(formData);
-    onOpenChange(false);
+  const handleFormSubmit = async (formData: Partial<Product>) => {
+    if (submitting) return;
+    try {
+      setSubmitting(true);
+      await onProductAdd(formData);
+      onOpenChange(false);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange} modal={!isGalleryShowing}>
+    <Dialog.Root open={open} onOpenChange={(v)=>{ if (!submitting) onOpenChange(v); }} modal={!isGalleryShowing}>
       <Dialog.Content style={{ maxWidth: 1200 }}>
         <Dialog.Title>Add New Product</Dialog.Title>
         <Dialog.Description size="2" mb="4">

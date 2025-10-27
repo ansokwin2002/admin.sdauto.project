@@ -82,6 +82,8 @@ export default function ProductList({
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deletingSingle, setDeletingSingle] = useState(false);
+  const [deletingBulk, setDeletingBulk] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<Product | null>(null);
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -219,8 +221,18 @@ export default function ProductList({
         params.append('sort_order', sortConfig.direction);
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/products?${params.toString()}`);
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      const response = await fetch(`${API_BASE_URL}/api/products?${params.toString()}` , {
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          'Accept': 'application/json',
+        },
+        credentials: 'include',
+      });
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Unauthorized. Please login again.');
+        }
         throw new Error('Failed to fetch products');
       }
       
@@ -302,9 +314,16 @@ export default function ProductList({
     if (itemToDelete) {
       // Single item deletion logic
       try {
+        setDeletingSingle(true);
         NProgress.start();
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
         const response = await fetch(`${API_BASE_URL}/api/products/${itemToDelete.id}`, {
           method: 'DELETE',
+          headers: {
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            'Accept': 'application/json',
+          },
+          credentials: 'include',
         });
         if (!response.ok) {
           throw new Error('Failed to delete product');
@@ -313,6 +332,7 @@ export default function ProductList({
       } catch (error) {
         toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
       } finally {
+        setDeletingSingle(false);
         NProgress.done();
       }
       // After successful deletion, invalidate cache for current filter
@@ -334,12 +354,17 @@ export default function ProductList({
     } else if (selectedProductIds.length > 0) {
       // Multiple items deletion logic
       try {
+        setDeletingBulk(true);
         NProgress.start();
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
         const response = await fetch(`${API_BASE_URL}/api/products/bulk`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            'Accept': 'application/json',
           },
+          credentials: 'include',
           body: JSON.stringify({ product_ids: selectedProductIds, action: 'delete' }),
         });
         if (!response.ok) {
@@ -351,6 +376,7 @@ export default function ProductList({
       } catch (error) {
         toast.error(error instanceof Error ? error.message : 'An unknown error occurred', { duration: Infinity, closeButton: true });
       } finally {
+        setDeletingBulk(false);
         NProgress.done();
       }
       // After successful deletion, invalidate cache for current filter
@@ -445,10 +471,10 @@ export default function ProductList({
           color="red"
           onClick={handleDeleteSelected}
           className="flex-shrink-0"
-          disabled={selectedProductIds.length === 0}
+          disabled={selectedProductIds.length === 0 || deletingBulk}
         >
-          <Trash2 size={16} />
-          Delete Selected ({selectedProductIds.length})
+          {deletingBulk ? <RefreshCcw className="animate-spin" size={16} /> : <Trash2 size={16} />}
+          {deletingBulk ? 'Deleting...' : `Delete Selected (${selectedProductIds.length})`}
         </Button>
       </Flex>
       

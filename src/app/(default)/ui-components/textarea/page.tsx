@@ -1,7 +1,7 @@
 import { Card, Flex, Heading, TextArea } from '@radix-ui/themes'
 
 export const metadata = {
-  title: "Text Area | EatlyPOS",
+  title: "Text Area | SDAUTO",
 }
 
 export default function TextAreaDemo() {

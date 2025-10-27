@@ -3,7 +3,7 @@ import { ScrollArea } from '@radix-ui/themes'
 import { Box, Flex, Grid, Text, Heading, Card } from '@radix-ui/themes'
 
 export const metadata = {
-  title: "Scroll Area | EatlyPOS",
+  title: "Scroll Area | SDAUTO",
 }
 
 export default function ScrollAreaDemo() {

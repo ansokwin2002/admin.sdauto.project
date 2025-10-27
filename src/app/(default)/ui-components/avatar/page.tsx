@@ -3,7 +3,7 @@ import { Avatar, Box, Card, Flex, Heading } from '@radix-ui/themes'
 import { User } from 'lucide-react'
 
 export const metadata = {
-  title: "Avatar | EatlyPOS",
+  title: "Avatar | SDAUTO",
 }
 
 export default function AvatarDemo() {

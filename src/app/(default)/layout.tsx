@@ -3,11 +3,11 @@
 import { Box, Flex } from "@radix-ui/themes";
 import TopBar from "@/components/common/TopBar";
 import Sidebar from "@/components/common/Sidebar";
-import { ReactNode, useCallback, useEffect, useState } from "react";
+import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { AppOrganizationProvider } from "@/contexts/AppOrganizationContext";
 import { Text } from "@radix-ui/themes";
 import ProgressBar from '@/components/common/ProgressBar';
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -39,6 +39,25 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       };
     }
   }, [onScroll]);
+
+  const pathname = usePathname();
+  const pageTitle = useMemo(() => {
+    const map: Record<string, string> = {
+      "/": "Dashboard",
+      "/dashboard": "Dashboard",
+      "/home": "Home",
+      "/settings": "Settings",
+      "/sliders": "Sliders",
+    };
+    if (map[pathname]) return map[pathname];
+    const parts = pathname.split('/').filter(Boolean);
+    if (parts.length === 0) return "Dashboard";
+    return parts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(" / ");
+  }, [pathname]);
+
+  useEffect(() => {
+    document.title = `${pageTitle} | SDAUTO`;
+  }, [pageTitle]);
   
   return (
     <AppOrganizationProvider>
@@ -80,7 +99,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           {/* Footer */}
           <Box className="py-4 mt-auto">
             <Flex justify="center">
-              <Text size="1" className="text-gray-400 dark:text-neutral-600 text-center">&copy; {new Date().getFullYear()} EatlyPOS. All rights reserved.</Text>
+              <Text size="1" className="text-gray-400 dark:text-neutral-600 text-center">&copy; {new Date().getFullYear()} SDAUTO. All rights reserved.</Text>
             </Flex>
           </Box>
         </Box>

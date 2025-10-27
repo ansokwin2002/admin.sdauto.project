@@ -2,7 +2,7 @@ import React from 'react';
 import { Flex, Heading, Text, RadioGroup, Card } from '@radix-ui/themes';
 
 export const metadata = {
-  title: "Radio Group | EatlyPOS",
+  title: "Radio Group | SDAUTO",
 }
 
 export default function RadioDemo() {

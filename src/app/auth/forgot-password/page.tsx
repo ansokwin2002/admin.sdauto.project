@@ -137,7 +137,7 @@ export default function ForgotPasswordPage() {
         
         <Box className="text-center mt-8 mb-4">
           <Text as="p" size="1" color="gray">
-            © {new Date().getFullYear()} EatlyPOS. All rights reserved.
+            © {new Date().getFullYear()} SDAUTO. All rights reserved.
           </Text>
           <Text as="p" size="1" color="gray">
             Version 1.0.0 (Build 001)

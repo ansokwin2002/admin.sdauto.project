@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useContext } from "react";
-import { DropdownMenu, Avatar, TextField, Flex, Text, Link as RadixLink, Button, Box, IconButton } from "@radix-ui/themes";
-import { Bell, User, Search, Moon, Sun, Settings, LogOut, ChevronDown, Building, Store, Menu, Rocket } from "lucide-react";
+import { DropdownMenu, Avatar, Flex, Text, Link as RadixLink, Button, Box, IconButton } from "@radix-ui/themes";
+import { Bell, User, Moon, Sun, Settings, LogOut, ChevronDown, Building, Store, Menu, Rocket } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { organization } from "@/data/CommonData";
@@ -62,6 +62,8 @@ export default function TopBar({ isScrolled, onMenuClick }: TopBarProps) {
     } finally {
       // Always clear token and redirect
       localStorage.removeItem('auth_token');
+      // Broadcast logout so other tabs auto-logout
+      try { localStorage.setItem('logout_broadcast', String(Date.now())); } catch {}
       router.push('/login');
     }
   };
@@ -95,47 +97,17 @@ export default function TopBar({ isScrolled, onMenuClick }: TopBarProps) {
     >
       <Box className="w-full px-4 py-3">
         <Flex justify="between" align="center" gap="4">
-          <div className="lg:hidden">
-            <IconButton variant="ghost" color="gray" onClick={onMenuClick}>
-              <Menu />
-            </IconButton>
+          <div className="flex items-center gap-3">
+            <div className="lg:hidden">
+              <IconButton variant="ghost" color="gray" onClick={onMenuClick}>
+                <Menu />
+              </IconButton>
+            </div>
           </div>
           
-          {/* Search input on the left */}
-          <div className="hidden lg:block">
-            <TextField.Root placeholder="Search...">
-              <TextField.Slot>
-                <Search size={14} />
-              </TextField.Slot>
-            </TextField.Root>
-          </div>
-          
+
           {/* Right side items */}
           <Flex align="center" gap="4">
-            {/* Branch dropdown */}
-            <DropdownMenu.Root>
-              <DropdownMenu.Trigger>
-                <Button highContrast>
-                  {activeEntity?.id === 'hq' ? <Building size={14} /> : <Store size={14} />}
-                  {activeEntity?.name}
-                  <ChevronDown size={14} />
-                </Button>
-              </DropdownMenu.Trigger>
-              <DropdownMenu.Content>
-                {organization.map((entity) => (
-                  <DropdownMenu.Item
-                    key={entity.id}
-                    onClick={() => {
-                      setActiveEntity(entity);
-                    }}
-                  >
-                    {entity.id === 'hq' ? <Building size={14} /> : <Store size={14} />}
-                    <span>{entity.name}</span>
-                  </DropdownMenu.Item>
-                ))}
-              </DropdownMenu.Content>
-            </DropdownMenu.Root>
-
             {/* Dark mode switch */}
             <div className="flex items-center gap-2 cursor-pointer bg-gray-100 dark:bg-neutral-800 rounded-full p-2" role="button" onClick={handleThemeToggle}>
               {mounted && (theme === 'dark' ? <Sun size={18} className="text-gray-400 dark:text-neutral-600" /> : <Moon size={18} className="text-gray-400 dark:text-neutral-600" />)}

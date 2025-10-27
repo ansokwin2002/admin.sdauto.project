@@ -20,8 +20,8 @@ const TopBar = ({ onMenuClick }) => {
             <Menu className="w-5 h-5" />
           </button>
           <Link href="/docs" className="flex items-center gap-2">
-            <Image src="/images/logo.png" width={130} height={20} alt="EatlyPOS" />
-            <Text weight="bold" size="4"><Text className="hidden">EatlyPOS</Text> Documentation</Text>
+            <Image src="/images/logo.png" width={130} height={20} alt="SDAUTO" />
+            <Text weight="bold" size="4"><Text className="hidden">SDAUTO</Text> Documentation</Text>
           </Link>
         </div>
         <div className="flex items-center gap-4">

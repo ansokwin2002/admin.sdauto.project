@@ -66,11 +66,13 @@ interface ProductFormProps {
   onBack: () => void;
   onSubmit: (formData: Partial<Product> & { image_urls?: string[], images?: File[], videos?: string[], deleted_images?: string[] }) => void;
   onLightboxChange?: (isOpen: boolean) => void;
+  isSubmitting?: boolean;
+  onDelete?: () => Promise<void> | void;
 }
 
 const MAX_IMAGES = 20;
 
-export default function ProductForm({ selectedItem, onBack, onSubmit, onLightboxChange }: ProductFormProps) {
+export default function ProductForm({ selectedItem, onBack, onSubmit, onLightboxChange, isSubmitting=false, onDelete }: ProductFormProps) {
   const [formData, setFormData] = useState<Partial<Product>>({
     name: selectedItem?.name || '',
     brand: selectedItem?.brand || '',
@@ -272,6 +274,8 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
     setVideoUrlModalOpen(false);
   };
 
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   return (
     <Box>
       <form className="space-y-6" onSubmit={handleSubmit}>
@@ -495,9 +499,9 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
 
         <Flex justify="between" mt="6">
           <Flex gap="4">
-            <Button color="green" type="submit">
-              <Save size={16} /> 
-              {selectedItem ? 'Save Changes' : 'Save Product'}
+            <Button color="green" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? <Save className="animate-spin" size={16} /> : <Save size={16} />}
+              {isSubmitting ? ' Saving...' : (selectedItem ? 'Save Changes' : 'Save Product')}
             </Button>
             <Button variant="soft" color="gray" onClick={onBack} type="button">
               <X size={16} />
@@ -505,9 +509,9 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
             </Button>
           </Flex>
           {selectedItem && (
-            <Button variant="soft" color="red" type="button">
-              <Trash2 size={16} />
-              Delete Item
+            <Button variant="soft" color="red" type="button" disabled={deleting} onClick={()=> setConfirmOpen(true)}>
+              {deleting ? <Save className="animate-spin" size={16} /> : <Trash2 size={16} />}
+              {deleting ? ' Deleting...' : 'Delete Item'}
             </Button>
           )}
         </Flex>
@@ -563,6 +567,32 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
         plugins={[Zoom]}
         closeOnBackdropClick={false}
       />
+
+      <Dialog.Root open={confirmOpen} onOpenChange={(v)=>{ if (!deleting) setConfirmOpen(v); }}>
+        <Dialog.Content style={{ maxWidth: 420 }}>
+          <Dialog.Title>Delete Product</Dialog.Title>
+          <Dialog.Description size="2" mb="3">
+            Are you sure you want to delete this product? This action cannot be undone.
+          </Dialog.Description>
+          <Flex justify="end" gap="2">
+            <Dialog.Close>
+              <Button variant="soft" color="gray" disabled={deleting}>Cancel</Button>
+            </Dialog.Close>
+            <Button color="red" disabled={deleting} onClick={async ()=>{
+              if (!onDelete) { setConfirmOpen(false); return; }
+              try {
+                setDeleting(true);
+                await onDelete();
+              } finally {
+                setDeleting(false);
+                setConfirmOpen(false);
+              }
+            }}>
+              {deleting ? 'Deleting...' : 'Delete'}
+            </Button>
+          </Flex>
+        </Dialog.Content>
+      </Dialog.Root>
     </Box>
   );
 }

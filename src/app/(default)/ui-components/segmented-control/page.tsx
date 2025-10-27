@@ -4,7 +4,7 @@ import { Flex, Grid, Text, Heading, Card } from '@radix-ui/themes'
 import { Laptop, Smartphone, Tablet } from 'lucide-react'
 
 export const metadata = {
-  title: "Segmented Control | EatlyPOS",
+  title: "Segmented Control | SDAUTO",
 }
 
 export default function SegmentedControlDemo() {

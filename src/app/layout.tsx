@@ -6,6 +6,7 @@ import '@/styles/custom.css'
 import { ThemeProvider, useTheme } from "next-themes";
 import { ReactNode, useEffect, useState } from "react";
 import { Theme } from "@radix-ui/themes";
+import { useAuthSync } from "@/utilities/authSync";
 import { Toaster } from "sonner";
 import NextTopLoader from 'nextjs-toploader';
 
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="icon" href="/images/logo.png" type="image/png" />
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className={`${plusJakartaSans.variable} antialiased`}>
@@ -77,6 +79,7 @@ function RadixThemeWrapper({ children }: { children: ReactNode }) {
     ? resolvedTheme === 'dark'
     : false; // Default to light theme during SSR
   
+  useAuthSync();
   return (
     <Theme 
       accentColor="orange"

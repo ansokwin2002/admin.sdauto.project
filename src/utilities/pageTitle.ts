@@ -1,5 +1,5 @@
 export const formatPageTitle = (pageTitle: string) => {
-  return `${pageTitle} | EatlyPOS`;
+  return `${pageTitle} | SDAUTO`;
 };
 
 export const setPageTitle = (pageTitle: string) => {

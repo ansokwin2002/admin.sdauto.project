@@ -3,7 +3,7 @@ import { Callout, Card, Flex, Heading } from '@radix-ui/themes'
 import { CheckCircle, Info, TriangleAlert, XCircle } from 'lucide-react'
 
 export const metadata = {
-  title: "Callout | EatlyPOS",
+  title: "Callout | SDAUTO",
 }
 
 export default function CalloutDemo() {

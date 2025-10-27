@@ -3,7 +3,7 @@ import { Box, Card, Flex, Heading, Inset, Strong, Text } from '@radix-ui/themes'
 import Image from 'next/image'
 
 export const metadata = {
-  title: "Card | EatlyPOS",
+  title: "Card | SDAUTO",
 }
 
 export default function CardDemo() {

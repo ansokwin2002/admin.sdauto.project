@@ -6,8 +6,6 @@ import { PlusIcon, LayoutDashboard, List } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FilterBranchProvider, useFilterBranch } from '@/contexts/FilterBranchContext';
 import { useAppOrganization } from '@/contexts/AppOrganizationContext';
-import BranchFilterInput from '@/components/common/BranchFilterInput';
-import { organization } from '@/data/CommonData';
 import ProductDashboard from '@/components/product-management/product-list/ProductDashboard';
 import ProductList from '@/components/product-management/product-list/ProductList';
 import { PageHeading } from '@/components/common/PageHeading';
@@ -35,7 +33,7 @@ function MenuContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
-  const { activeBranchFilter, setActiveBranchFilter } = useFilterBranch();
+  // const { activeBranchFilter, setActiveBranchFilter } = useFilterBranch();
   const { activeEntity } = useAppOrganization();
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -46,9 +44,7 @@ function MenuContent() {
     router.push(`?${params.toString()}`);
   };
   
-  useEffect(() => {
-    setActiveBranchFilter(activeEntity.id === 'hq' ? null : activeEntity);
-  }, [activeEntity, setActiveBranchFilter]);
+
 
   useEffect(() => {
     const shouldRefresh = searchParams.get('refresh');
@@ -102,21 +98,27 @@ function MenuContent() {
     }
 
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
       const response = await fetch(`${API_BASE_URL}/api/products`, {
         method: 'POST',
         headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
           'Accept': 'application/json',
         },
+        credentials: 'include',
         body: formData,
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        if (response.status === 422) {
+        const errorData = await response.json().catch(()=>null);
+        if (response.status === 401) {
+          throw new Error('Unauthorized. Please login again.');
+        }
+        if (response.status === 422 && errorData?.errors) {
           const messages = Object.values(errorData.errors).flat();
           toast.error(messages.join('\n'));
         } else {
-          throw new Error(errorData.message || 'Failed to add product');
+          throw new Error(errorData?.message || 'Failed to add product');
         }
         return;
       }
@@ -152,26 +154,7 @@ function MenuContent() {
           gap="4"
           width={{ initial: "full", sm: "auto" }}
         >
-          <Box width={{ initial: "full", sm: "auto" }}>
-            <BranchFilterInput 
-              selectedBranch={activeBranchFilter?.id || ''} 
-              setSelectedBranch={(id: string) => {
-                const branch = organization.find(o => o.id === id);
-                const params = new URLSearchParams(searchParams.toString());
-                if (branch) {
-                  setActiveBranchFilter(branch);
-                } else {
-                  setActiveBranchFilter(null);
-                }
-                router.push(`?${params.toString()}`);
-              }}
-              clearFilter={() => {
-                const params = new URLSearchParams(searchParams.toString());
-                setActiveBranchFilter(null);
-                router.push(`?${params.toString()}`);
-              }}
-            />
-          </Box>
+
           <Box width={{ initial: "full", sm: "auto" }}>
             <Button onClick={handleAddProduct} className="w-full sm:w-auto">
               <PlusIcon size={16} />

@@ -1,7 +1,7 @@
 import { Table, Card, Heading, Flex } from '@radix-ui/themes'
 
 export const metadata = {
-  title: "Table | EatlyPOS",
+  title: "Table | SDAUTO",
 }
 
 export default function TableDemo() {

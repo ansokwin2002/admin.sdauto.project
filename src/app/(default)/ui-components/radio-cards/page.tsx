@@ -3,7 +3,7 @@ import { Box, Card, Flex, Heading, Text, RadioCards } from '@radix-ui/themes'
 import { Laptop, CreditCard, Smartphone, Zap, Wifi, Cloud } from 'lucide-react'
 
 export const metadata = {
-  title: "Radio Cards | EatlyPOS",
+  title: "Radio Cards | SDAUTO",
 }
 
 export default function RadioCardsDemo() {

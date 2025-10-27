@@ -271,6 +271,15 @@ export default function Sidebar({ width, onClose }: SidebarProps) {
       ],
     },
     {
+      title: "Settings",
+      icon: <IconSettings />,
+      link: "#",
+      subMenu: [
+        { title: "Home Settings", link: "/home-settings" },
+        { title: "Sliders", link: "/sliders" },
+      ],
+    },
+    {
       title: "Sales",
       icon: <IconSales />,
       link: "#",

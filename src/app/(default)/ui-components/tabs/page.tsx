@@ -1,7 +1,7 @@
 import { Tabs, Card, Heading, Flex, Text } from '@radix-ui/themes'
 
 export const metadata = {
-  title: "Tabs | EatlyPOS",
+  title: "Tabs | SDAUTO",
 }
 
 export default function TabsDemo() {

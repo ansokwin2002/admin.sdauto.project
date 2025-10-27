@@ -23,8 +23,18 @@ export default function EditMenuItemPage() {
 
       NProgress.start();
       try {
-        const response = await fetch(`${API_BASE_URL}/api/products/${itemId}`);
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+        const response = await fetch(`${API_BASE_URL}/api/products/${itemId}`, {
+          headers: {
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            'Accept': 'application/json',
+          },
+          credentials: 'include',
+        });
         if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error('Unauthorized. Please login again.');
+          }
           throw new Error('Failed to fetch product');
         }
         const data = await response.json();
@@ -44,8 +54,12 @@ export default function EditMenuItemPage() {
     router.push('/product-management/product-list?tab=list&refresh=true');
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const handleSubmitForm = async (formData: Partial<Product> & { image_urls?: string[], images?: File[], videos?: string[], deleted_images?: string[] }) => {
     NProgress.start();
+    setIsSubmitting(true);
     try {
       const productFormData = new FormData();
 
@@ -88,22 +102,28 @@ export default function EditMenuItemPage() {
         });
       }
 
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
       const response = await fetch(`${API_BASE_URL}/api/products/${itemId}`, {
         method: 'POST', // Use POST for FormData with PUT/PATCH method override
         headers: {
           'Accept': 'application/json',
           'X-HTTP-Method-Override': 'PUT', // Laravel expects this for PUT/PATCH with FormData
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         },
+        credentials: 'include',
         body: productFormData,
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        if (response.status === 422) {
+        const errorData = await response.json().catch(()=>null);
+        if (response.status === 401) {
+          throw new Error('Unauthorized. Please login again.');
+        }
+        if (response.status === 422 && errorData?.errors) {
           const messages = Object.values(errorData.errors).flat();
           toast.error(messages.join('\n'));
         } else {
-          throw new Error(errorData.message || 'Failed to update product');
+          throw new Error(errorData?.message || 'Failed to update product');
         }
         return;
       }
@@ -114,6 +134,35 @@ export default function EditMenuItemPage() {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'An unknown error occurred', { duration: Infinity, closeButton: true });
     } finally {
+      setIsSubmitting(false);
+      NProgress.done();
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!itemId) return;
+    NProgress.start();
+    setIsDeleting(true);
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      const response = await fetch(`${API_BASE_URL}/api/products/${itemId}`, {
+        method: 'DELETE',
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          'Accept': 'application/json',
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const err = await response.json().catch(()=>null);
+        throw new Error(err?.message || 'Failed to delete product');
+      }
+      toast.success('Product deleted successfully');
+      handleBackToList();
+    } catch (e:any) {
+      toast.error(e?.message || 'Delete failed');
+    } finally {
+      setIsDeleting(false);
       NProgress.done();
     }
   };
@@ -135,6 +184,8 @@ export default function EditMenuItemPage() {
       selectedItem={selectedItem}
       onBack={handleBackToList}
       onSubmit={handleSubmitForm}
+      isSubmitting={isSubmitting}
+      onDelete={handleDelete}
     />
   );
 } 

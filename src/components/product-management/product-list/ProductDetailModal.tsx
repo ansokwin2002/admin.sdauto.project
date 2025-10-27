@@ -92,8 +92,18 @@ export default function ProductDetailModal({ open, onOpenChange, productId }: Pr
         setLoading(true);
         setError(null);
         try {
-          const response = await fetch(`${API_BASE_URL}/api/products/${productId}`);
+          const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+          const response = await fetch(`${API_BASE_URL}/api/products/${productId}` , {
+            headers: {
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+              'Accept': 'application/json',
+            },
+            credentials: 'include',
+          });
           if (!response.ok) {
+            if (response.status === 401) {
+              throw new Error('Unauthorized. Please login again.');
+            }
             throw new Error('Failed to fetch product details');
           }
           const data = await response.json();

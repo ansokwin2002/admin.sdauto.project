@@ -3,7 +3,7 @@ import { Separator } from '@radix-ui/themes'
 import { Box, Flex, Grid, Text, Heading, Card } from '@radix-ui/themes'
 
 export const metadata = {
-  title: "Separator | EatlyPOS",
+  title: "Separator | SDAUTO",
 }
 
 export default function SeparatorDemo() {

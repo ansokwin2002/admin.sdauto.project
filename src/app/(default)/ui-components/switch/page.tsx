@@ -1,7 +1,7 @@
 import { Switch, Card, Heading, Flex, Text } from '@radix-ui/themes'
 
 export const metadata = {
-  title: "Switch | EatlyPOS",
+  title: "Switch | SDAUTO",
 }
 
 export default function SwitchDemo() {

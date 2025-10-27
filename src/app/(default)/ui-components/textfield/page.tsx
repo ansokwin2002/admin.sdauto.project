@@ -3,7 +3,7 @@ import { Card, Flex, Heading, TextField } from '@radix-ui/themes'
 import { Search } from 'lucide-react'
 
 export const metadata = {
-  title: "Text Field | EatlyPOS",
+  title: "Text Field | SDAUTO",
 }
 
 export default function TextFieldDemo() {

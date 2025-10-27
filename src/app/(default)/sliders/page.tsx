@@ -20,6 +20,9 @@ export default function SlidersPage() {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [createMode, setCreateMode] = useState<'file' | 'url'>('file');
+  const [imageUrl, setImageUrl] = useState('');
+  const [creatingFromUrl, setCreatingFromUrl] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [savingOrderingId, setSavingOrderingId] = useState<number | null>(null);
   const [savingEdit, setSavingEdit] = useState(false);
@@ -231,16 +234,75 @@ export default function SlidersPage() {
         <Box p="3">
           <Flex justify="between" align="center" wrap="wrap" gap="3">
             <Text as="div" size="3" weight="bold">Add New Slider</Text>
-
           </Flex>
 
-          <Flex justify="between" align="center" mt="3" wrap="wrap" gap="3">
-            <input ref={fileInputRef} type="file" accept="image/*" onChange={(e)=> setFile(e.target.files?.[0] || null)} />
-            <Flex align="center" gap="2">
-              <Button onClick={handleUpload} disabled={uploading}>
-                <Upload size={16} /> {uploading ? 'Uploading...' : 'Upload'}
-              </Button>
+          <Flex mt="3" direction="column" gap="3">
+            <Flex gap="2">
+              <Button variant={createMode==='file' ? 'solid' : 'soft'} onClick={()=> setCreateMode('file')}>Upload file</Button>
+              <Button variant={createMode==='url' ? 'solid' : 'soft'} onClick={()=> setCreateMode('url')}>Use image URL</Button>
             </Flex>
+
+            {createMode === 'file' ? (
+              <Flex justify="between" align="center" wrap="wrap" gap="3">
+                <input ref={fileInputRef} type="file" accept="image/*" onChange={(e)=> setFile(e.target.files?.[0] || null)} />
+                <Flex align="center" gap="2">
+                  <Button onClick={handleUpload} disabled={uploading}>
+                    <Upload size={16} /> {uploading ? 'Uploading...' : 'Upload'}
+                  </Button>
+                </Flex>
+              </Flex>
+            ) : (
+              <Flex align="center" gap="3" wrap="wrap">
+                <TextField.Root
+                  className="min-w-[320px] flex-1"
+                  placeholder="https://example.com/image.jpg"
+                  value={imageUrl}
+                  onChange={(e)=> setImageUrl(e.target.value)}
+                />
+                <Button disabled={creatingFromUrl} onClick={async ()=>{
+                  const url = imageUrl.trim();
+                  if (!url) { toast.error('Please enter an image URL'); return; }
+                  try {
+                    setCreatingFromUrl(true);
+                    NProgress.start();
+                    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+                    const res = await fetch(`${API_BASE_URL}/api/sliders/url`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+                      },
+                      credentials: 'include',
+                      body: JSON.stringify({ url })
+                    });
+                    let json:any = null; try { json = await res.json(); } catch {}
+                    if (!res.ok) {
+                      if (res.status === 422 && json?.errors) {
+                        const messages = Object.values(json.errors).flat().join('\n');
+                        toast.error(messages);
+                      } else if (json?.message) {
+                        toast.error(json.message);
+                      } else {
+                        const text = await res.text();
+                        toast.error(text || 'Failed to create from URL');
+                      }
+                      return;
+                    }
+                    toast.success((json && json.message) || 'Slider created successfully');
+                    setImageUrl('');
+                    await fetchItems();
+                  } catch (e:any) {
+                    toast.error(e.message || 'Request failed');
+                  } finally {
+                    setCreatingFromUrl(false);
+                    NProgress.done();
+                  }
+                }}>
+                  {creatingFromUrl ? 'Creating...' : 'Create from URL'}
+                </Button>
+              </Flex>
+            )}
           </Flex>
         </Box>
       </Card>

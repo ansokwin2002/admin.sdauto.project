@@ -9,7 +9,7 @@ import { useTheme } from "next-themes";
 import clsx from 'clsx';
 import {
   IconDot, IconDashboard, IconSales, IconUI, IconPages, IconMenuLevel, IconDocs,
-  IconSupport, IconMenu, IconInventory, IconSettings, IconWaste, IconLoyalty, IconPurchasing, IconPolicy
+  IconSupport, IconMenu, IconInventory, IconSettings, IconWaste, IconLoyalty, IconPurchasing
 } from './MenuIcons';
 
 // Define types for menu items
@@ -291,12 +291,13 @@ export default function Sidebar({ width, onClose }: SidebarProps) {
         { title: "Home Settings", link: "/home-settings" },
         { title: "Sliders", link: "/sliders" },
         { title: "Shippings", link: "/shippings" },
-        { title: "Policy", link: "#", icon: <IconPolicy />, subMenu: [
+        { title: "Policy", link: "#", subMenu: [
           { title: "Privacy", link: "/policy/privacy" },
           { title: "Warranty, Return, and Refund", link: "/policy/warranty-return-refund" },
           { title: "Shipping", link: "/policy/shipping" },
           { title: "Order Cancellation", link: "/policy/order-cancellation" },
         ]},
+        { title: "FAQs", link: "/faqs" },
       ],
     },
 

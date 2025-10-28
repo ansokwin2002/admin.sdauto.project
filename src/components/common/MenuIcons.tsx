@@ -152,3 +152,11 @@ export const IconPolicy = () => (
     <path d="M7.125 9L8.4375 10.3125L11.625 7.125" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 )
+
+export const IconFaq = () => (
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="9" cy="9" r="7.5" stroke="currentColor" strokeWidth="1.2" fill="none"/>
+    <path d="M6.75 6.75C6.75 5.50736 7.75736 4.5 9 4.5C10.2426 4.5 11.25 5.50736 11.25 6.75C11.25 7.99264 10.2426 9 9 9V10.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+    <circle cx="9" cy="13.5" r="0.75" fill="currentColor"/>
+  </svg>
+)

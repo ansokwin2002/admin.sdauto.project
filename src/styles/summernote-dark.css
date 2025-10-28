@@ -1,0 +1,357 @@
+/* Summernote Dark Mode Styles */
+
+/* Main editor container */
+.dark .note-editor,
+.dark-theme.note-editor {
+  background-color: var(--gray-1) !important;
+  border-color: var(--gray-6) !important;
+  color: var(--gray-12) !important;
+  border-radius: 6px !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+/* Focus state for the entire editor */
+.dark .note-editor:focus-within,
+.dark-theme.note-editor:focus-within,
+.dark .note-editor.note-editor-focused,
+.dark-theme.note-editor.note-editor-focused {
+  border-color: var(--accent-8) !important;
+  box-shadow: 0 0 0 1px var(--accent-8) !important;
+}
+
+/* Light mode focus styles */
+.note-editor {
+  border-radius: 6px !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.note-editor:focus-within,
+.note-editor.note-editor-focused {
+  border-color: var(--accent-8) !important;
+  box-shadow: 0 0 0 1px var(--accent-8) !important;
+}
+
+/* Toolbar */
+.dark .note-toolbar,
+.dark-theme.note-editor .note-toolbar {
+  background-color: var(--gray-2) !important;
+  border-bottom-color: var(--gray-6) !important;
+  border-color: var(--gray-6) !important;
+}
+
+/* Toolbar buttons */
+.dark .note-toolbar .note-btn-group .note-btn,
+.dark-theme.note-editor .note-toolbar .note-btn-group .note-btn {
+  background-color: transparent !important;
+  border-color: var(--gray-6) !important;
+  color: var(--gray-11) !important;
+}
+
+.dark .note-toolbar .note-btn-group .note-btn:hover,
+.dark-theme.note-editor .note-toolbar .note-btn-group .note-btn:hover {
+  background-color: var(--gray-3) !important;
+  color: var(--gray-12) !important;
+}
+
+.dark .note-toolbar .note-btn-group .note-btn.active,
+.dark-theme.note-editor .note-toolbar .note-btn-group .note-btn.active {
+  background-color: var(--orange-9) !important;
+  color: white !important;
+  border-color: var(--orange-9) !important;
+}
+
+/* Dropdown menus */
+.dark .note-dropdown-menu,
+.dark-theme.note-editor .note-dropdown-menu {
+  background-color: var(--gray-1) !important;
+  border-color: var(--gray-6) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2) !important;
+}
+
+.dark .note-dropdown-menu .note-dropdown-item,
+.dark-theme.note-editor .note-dropdown-menu .note-dropdown-item {
+  color: var(--gray-11) !important;
+}
+
+.dark .note-dropdown-menu .note-dropdown-item:hover,
+.dark-theme.note-editor .note-dropdown-menu .note-dropdown-item:hover {
+  background-color: var(--gray-3) !important;
+  color: var(--gray-12) !important;
+}
+
+/* Editor content area */
+.dark .note-editable,
+.dark-theme.note-editor .note-editable {
+  background-color: var(--gray-1) !important;
+  color: var(--gray-12) !important;
+  border-color: var(--gray-6) !important;
+}
+
+/* Placeholder text */
+.dark .note-editable[contenteditable="true"]:empty:before,
+.dark-theme.note-editor .note-editable[contenteditable="true"]:empty:before {
+  color: var(--gray-9) !important;
+}
+
+/* Status bar */
+.dark .note-statusbar,
+.dark-theme.note-editor .note-statusbar {
+  background-color: var(--gray-2) !important;
+  border-top-color: var(--gray-6) !important;
+  border-color: var(--gray-6) !important;
+}
+
+.dark .note-statusbar .note-resizebar,
+.dark-theme.note-editor .note-statusbar .note-resizebar {
+  border-top-color: var(--gray-6) !important;
+}
+
+/* Modal dialogs */
+.dark .note-modal .modal-content,
+.dark-theme.note-editor .note-modal .modal-content {
+  background-color: var(--gray-1) !important;
+  border-color: var(--gray-6) !important;
+  color: var(--gray-12) !important;
+}
+
+.dark .note-modal .modal-header,
+.dark-theme.note-editor .note-modal .modal-header {
+  background-color: var(--gray-2) !important;
+  border-bottom-color: var(--gray-6) !important;
+}
+
+.dark .note-modal .modal-title,
+.dark-theme.note-editor .note-modal .modal-title {
+  color: var(--gray-12) !important;
+}
+
+.dark .note-modal .modal-body,
+.dark-theme.note-editor .note-modal .modal-body {
+  background-color: var(--gray-1) !important;
+  color: var(--gray-11) !important;
+}
+
+.dark .note-modal .modal-footer,
+.dark-theme.note-editor .note-modal .modal-footer {
+  background-color: var(--gray-2) !important;
+  border-top-color: var(--gray-6) !important;
+}
+
+/* Form controls in modals */
+.dark .note-modal .form-control,
+.dark-theme.note-editor .note-modal .form-control {
+  background-color: var(--gray-1) !important;
+  border-color: var(--gray-6) !important;
+  color: var(--gray-12) !important;
+}
+
+.dark .note-modal .form-control:focus,
+.dark-theme.note-editor .note-modal .form-control:focus {
+  background-color: var(--gray-1) !important;
+  border-color: var(--orange-9) !important;
+  box-shadow: 0 0 0 0.2rem rgba(252, 128, 25, 0.25) !important;
+}
+
+/* Buttons in modals */
+.dark .note-modal .btn,
+.dark-theme.note-editor .note-modal .btn {
+  border-color: var(--gray-6) !important;
+}
+
+.dark .note-modal .btn-primary,
+.dark-theme.note-editor .note-modal .btn-primary {
+  background-color: var(--orange-9) !important;
+  border-color: var(--orange-9) !important;
+  color: white !important;
+}
+
+.dark .note-modal .btn-primary:hover,
+.dark-theme.note-editor .note-modal .btn-primary:hover {
+  background-color: var(--orange-10) !important;
+  border-color: var(--orange-10) !important;
+}
+
+.dark .note-modal .btn-secondary,
+.dark-theme.note-editor .note-modal .btn-secondary {
+  background-color: var(--gray-3) !important;
+  border-color: var(--gray-6) !important;
+  color: var(--gray-11) !important;
+}
+
+.dark .note-modal .btn-secondary:hover,
+.dark-theme.note-editor .note-modal .btn-secondary:hover {
+  background-color: var(--gray-4) !important;
+  color: var(--gray-12) !important;
+}
+
+/* Color palette */
+.dark .note-color-palette,
+.dark-theme.note-editor .note-color-palette {
+  background-color: var(--gray-1) !important;
+  border-color: var(--gray-6) !important;
+}
+
+.dark .note-color-palette .note-color-btn,
+.dark-theme.note-editor .note-color-palette .note-color-btn {
+  border-color: var(--gray-6) !important;
+}
+
+/* Table styles */
+.dark .note-editable table,
+.dark-theme.note-editor .note-editable table {
+  border-color: var(--gray-6) !important;
+}
+
+.dark .note-editable table td,
+.dark .note-editable table th,
+.dark-theme.note-editor .note-editable table td,
+.dark-theme.note-editor .note-editable table th {
+  border-color: var(--gray-6) !important;
+}
+
+/* Code view */
+.dark .note-codable,
+.dark-theme.note-editor .note-codable {
+  background-color: var(--gray-1) !important;
+  color: var(--gray-12) !important;
+  border-color: var(--gray-6) !important;
+}
+
+/* Popover */
+.dark .note-popover .popover-content,
+.dark-theme.note-editor .note-popover .popover-content {
+  background-color: var(--gray-1) !important;
+  border-color: var(--gray-6) !important;
+  color: var(--gray-11) !important;
+}
+
+.dark .note-popover .arrow::after,
+.dark-theme.note-editor .note-popover .arrow::after {
+  border-bottom-color: var(--gray-1) !important;
+}
+
+/* Handle */
+.dark .note-handle .note-control-selection,
+.dark-theme.note-editor .note-handle .note-control-selection {
+  border-color: var(--orange-9) !important;
+}
+
+/* Fullscreen mode */
+.dark .note-editor.fullscreen,
+.dark-theme.note-editor.fullscreen {
+  background-color: var(--gray-1) !important;
+}
+
+.dark .note-editor.fullscreen .note-editable,
+.dark-theme.note-editor.fullscreen .note-editable {
+  background-color: var(--gray-1) !important;
+}
+
+/* Scrollbars for webkit browsers */
+.dark .note-editable::-webkit-scrollbar,
+.dark-theme.note-editor .note-editable::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dark .note-editable::-webkit-scrollbar-track,
+.dark-theme.note-editor .note-editable::-webkit-scrollbar-track {
+  background: var(--gray-2);
+}
+
+.dark .note-editable::-webkit-scrollbar-thumb,
+.dark-theme.note-editor .note-editable::-webkit-scrollbar-thumb {
+  background: var(--gray-6);
+  border-radius: 4px;
+}
+
+.dark .note-editable::-webkit-scrollbar-thumb:hover,
+.dark-theme.note-editor .note-editable::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-7);
+}
+
+/* Focus states for editable area - remove conflicting styles */
+.dark .note-editor.note-frame .note-editing-area .note-editable:focus,
+.dark-theme.note-editor.note-frame .note-editing-area .note-editable:focus,
+.note-editor.note-frame .note-editing-area .note-editable:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Tooltip */
+.dark .note-tooltip,
+.dark-theme.note-editor .note-tooltip {
+  background-color: var(--gray-12) !important;
+  color: var(--gray-1) !important;
+}
+
+.dark .note-tooltip .tooltip-arrow,
+.dark-theme.note-editor .note-tooltip .tooltip-arrow {
+  border-top-color: var(--gray-12) !important;
+}
+
+/* Help dialog */
+.dark .note-help-dialog .modal-content,
+.dark-theme.note-editor .note-help-dialog .modal-content {
+  background-color: var(--gray-1) !important;
+  color: var(--gray-11) !important;
+}
+
+/* Custom button group borders */
+.dark .note-btn-group,
+.dark-theme.note-editor .note-btn-group {
+  border-color: var(--gray-6) !important;
+}
+
+.dark .note-btn-group .note-btn:not(:last-child),
+.dark-theme.note-editor .note-btn-group .note-btn:not(:last-child) {
+  border-right-color: var(--gray-6) !important;
+}
+
+/* Ensure proper text selection in dark mode */
+.dark .note-editable::selection,
+.dark-theme.note-editor .note-editable::selection {
+  background-color: var(--orange-a5) !important;
+  color: var(--gray-12) !important;
+}
+
+.dark .note-editable::-moz-selection,
+.dark-theme.note-editor .note-editable::-moz-selection {
+  background-color: var(--orange-a5) !important;
+  color: var(--gray-12) !important;
+}
+
+/* Additional focus improvements */
+.note-editor {
+  border: 1px solid var(--gray-6) !important;
+}
+
+.dark .note-editor,
+.dark-theme.note-editor {
+  border: 1px solid var(--gray-6) !important;
+}
+
+/* Ensure toolbar doesn't interfere with focus border */
+.note-editor:focus-within .note-toolbar,
+.note-editor.note-editor-focused .note-toolbar {
+  border-bottom-color: var(--accent-8) !important;
+}
+
+.dark .note-editor:focus-within .note-toolbar,
+.dark-theme.note-editor:focus-within .note-toolbar,
+.dark .note-editor.note-editor-focused .note-toolbar,
+.dark-theme.note-editor.note-editor-focused .note-toolbar {
+  border-bottom-color: var(--accent-8) !important;
+}
+
+/* Status bar focus styling */
+.note-editor:focus-within .note-statusbar,
+.note-editor.note-editor-focused .note-statusbar {
+  border-top-color: var(--accent-8) !important;
+}
+
+.dark .note-editor:focus-within .note-statusbar,
+.dark-theme.note-editor:focus-within .note-statusbar,
+.dark .note-editor.note-editor-focused .note-statusbar,
+.dark-theme.note-editor.note-editor-focused .note-statusbar {
+  border-top-color: var(--accent-8) !important;
+}

@@ -1,0 +1,45 @@
+<svg width="400" height="240" viewBox="0 0 400 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="400" height="240" fill="#f8f9fa"/>
+  
+  <!-- Grid pattern -->
+  <defs>
+    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e9ecef" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="400" height="240" fill="url(#grid)"/>
+  
+  <!-- Map icon -->
+  <g transform="translate(200, 120)">
+    <!-- Pin background -->
+    <circle cx="0" cy="-10" r="25" fill="#fc8019" opacity="0.2"/>
+    
+    <!-- Pin -->
+    <path d="M0 -35 C-12 -35 -22 -25 -22 -13 C-22 -1 0 15 0 15 S22 -1 22 -13 C22 -25 12 -35 0 -35 Z" fill="#fc8019"/>
+    
+    <!-- Pin center -->
+    <circle cx="0" cy="-13" r="8" fill="white"/>
+    <circle cx="0" cy="-13" r="4" fill="#fc8019"/>
+  </g>
+  
+  <!-- Roads -->
+  <path d="M50 180 Q150 160 250 180 Q300 190 350 170" stroke="#dee2e6" stroke-width="3" fill="none"/>
+  <path d="M80 60 Q180 80 280 60" stroke="#dee2e6" stroke-width="2" fill="none"/>
+  <path d="M120 200 L120 40" stroke="#dee2e6" stroke-width="2" fill="none"/>
+  <path d="M280 200 L280 40" stroke="#dee2e6" stroke-width="2" fill="none"/>
+  
+  <!-- Buildings -->
+  <rect x="60" y="100" width="30" height="40" fill="#adb5bd" opacity="0.6"/>
+  <rect x="100" y="90" width="25" height="50" fill="#adb5bd" opacity="0.6"/>
+  <rect x="300" y="80" width="35" height="60" fill="#adb5bd" opacity="0.6"/>
+  <rect x="320" y="100" width="20" height="40" fill="#adb5bd" opacity="0.6"/>
+  
+  <!-- Text -->
+  <text x="200" y="200" text-anchor="middle" fill="#6c757d" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="500">
+    Map Image Placeholder
+  </text>
+  <text x="200" y="220" text-anchor="middle" fill="#adb5bd" font-family="system-ui, -apple-system, sans-serif" font-size="12">
+    Upload an image to replace this placeholder
+  </text>
+</svg>

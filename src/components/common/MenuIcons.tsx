@@ -145,3 +145,10 @@ export const IconSupport = () => (
     </defs>
   </svg>
 )
+
+export const IconPolicy = () => (
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M9 1.5L14.25 3.375V8.25C14.25 11.7188 11.8125 14.8125 9 15.75C6.1875 14.8125 3.75 11.7188 3.75 8.25V3.375L9 1.5Z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+    <path d="M7.125 9L8.4375 10.3125L11.625 7.125" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+)

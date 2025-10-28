@@ -331,7 +331,6 @@ export default function HomeSettingsPage() {
               {loading ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
               {loading ? ' Saving...' : ' Save'}
             </Button>
-            <Button variant="soft" color="gray" type="button" onClick={() => window.history.back()}>Cancel</Button>
           </Flex>
         </Flex>
       </form>

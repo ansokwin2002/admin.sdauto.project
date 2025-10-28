@@ -8,8 +8,8 @@ import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import clsx from 'clsx';
 import {
-  IconDot, IconDashboard, IconSales, IconUI, IconPages, IconMenuLevel, IconDocs, 
-  IconSupport, IconMenu, IconInventory, IconSettings, IconWaste, IconLoyalty, IconPurchasing 
+  IconDot, IconDashboard, IconSales, IconUI, IconPages, IconMenuLevel, IconDocs,
+  IconSupport, IconMenu, IconInventory, IconSettings, IconWaste, IconLoyalty, IconPurchasing, IconPolicy
 } from './MenuIcons';
 
 // Define types for menu items
@@ -83,7 +83,7 @@ const MenuLink = ({
           className="flex justify-center items-center size-8 rounded-sm"
           style={isActive ? {color: 'var(--accent-9)'} : {color: 'var(--color-gray-400)'}}
         >
-          <IconDot />
+          {icon || <IconDot />}
         </span>
       )}
       {level === 1 ? <span className="text-gray-500 font-semibold dark:text-neutral-400" style={isActive ? { color: 'var(--accent-9)' } : {}}>{title}</span>
@@ -107,7 +107,7 @@ const MenuButton = ({
   onClick: () => void;
   level?: number;
 }) => {
-  const padding = level === 1 ? "pl-3 pr-3" : "pl-14 pr-3";
+  const padding = level === 1 ? "pl-3 pr-3" : "pl-3.5 pr-2";
   
   return (
     <button 
@@ -118,8 +118,20 @@ const MenuButton = ({
         padding
       )}
     >
-      {icon && <span className="flex justify-center items-center size-8 bg-gray-100 rounded-sm text-gray-400 dark:text-neutral-600 dark:bg-neutral-800">{icon}</span> }
-      <span className="text-gray-500 font-semibold dark:text-neutral-400">{title}</span>
+      {level === 1 ? (
+        icon && <span className="flex justify-center items-center size-8 bg-gray-100 rounded-sm text-gray-400 dark:text-neutral-600 dark:bg-neutral-800">{icon}</span>
+      ) : (
+        <span
+          className="flex justify-center items-center size-8 rounded-sm"
+          style={{color: 'var(--color-gray-400)'}}
+        >
+          {icon || <IconDot />}
+        </span>
+      )}
+      {level === 1 ?
+        <span className="text-gray-500 font-semibold dark:text-neutral-400">{title}</span>
+        : <span className="text-gray-400 hover:text-gray-500 font-medium dark:text-neutral-400">{title}</span>
+      }
       <ChevronDown className={clsx("size-3 ml-auto transition-transform", isOpen ? 'rotate-180' : '')} />
     </button>
   );
@@ -190,8 +202,9 @@ const MenuGroup = ({
                     <div key={subIndex}>
                       {subItem.subMenu ? (
                         <>
-                          <MenuButton 
+                          <MenuButton
                             title={subItem.title}
+                            icon={subItem.icon}
                             isOpen={openSubMenu === subItem.title}
                             onClick={() => setOpenSubMenu(openSubMenu === subItem.title ? null : subItem.title)}
                             level={2}
@@ -277,19 +290,16 @@ export default function Sidebar({ width, onClose }: SidebarProps) {
       subMenu: [
         { title: "Home Settings", link: "/home-settings" },
         { title: "Sliders", link: "/sliders" },
+        { title: "Shippings", link: "/shippings" },
+        { title: "Policy", link: "#", icon: <IconPolicy />, subMenu: [
+          { title: "Privacy", link: "/policy/privacy" },
+          { title: "Warranty, Return, and Refund", link: "/policy/warranty-return-refund" },
+          { title: "Shipping", link: "/policy/shipping" },
+          { title: "Order Cancellation", link: "/policy/order-cancellation" },
+        ]},
       ],
     },
-    {
-      title: "Sales",
-      icon: <IconSales />,
-      link: "#",
-      subMenu: [
-        { title: "POS, KDS, Checkout", link: "/sales/pos" },
-        { title: "Live Orders", link: "/sales/live-orders" },
-        { title: "Order History", link: "/sales/order-history" },
-        { title: "Reports", link: "/sales/sales-reports" },
-      ],
-    },
+
   ], []);
   
   const uiPagesMenuData: MenuItem[] = useMemo(() => [], []);

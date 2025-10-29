@@ -40,7 +40,7 @@ export default function AddFaqPage() {
       };
 
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const res = await fetch(`${API_BASE_URL}/api/faqs`, {
+      const res = await fetch(`${API_BASE_URL}/api/admin/faqs`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

@@ -36,7 +36,7 @@ export default function FaqsPage() {
     NProgress.start();
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const res = await fetch(`${API_BASE_URL}/api/faqs`, {
+      const res = await fetch(`${API_BASE_URL}/api/admin/faqs`, {
         headers: {
           'Accept': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
@@ -101,7 +101,7 @@ export default function FaqsPage() {
       };
 
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const url = isEdit ? `${API_BASE_URL}/api/faqs/${editingFaq?.id}` : `${API_BASE_URL}/api/faqs`;
+      const url = isEdit ? `${API_BASE_URL}/api/admin/faqs/${editingFaq?.id}` : `${API_BASE_URL}/api/admin/faqs`;
       const method = isEdit ? 'PUT' : 'POST';
 
       const res = await fetch(url, {
@@ -146,7 +146,7 @@ export default function FaqsPage() {
     setDeleting(true);
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const res = await fetch(`${API_BASE_URL}/api/faqs/${deleteId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/admin/faqs/${deleteId}`, {
         method: 'DELETE',
         headers: {
           'Accept': 'application/json',

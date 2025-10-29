@@ -73,7 +73,7 @@ export default function ShippingsPage() {
       NProgress.start();
       setLoading(true);
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const res = await fetch(`${API_BASE_URL}/api/shippings`, {
+      const res = await fetch(`${API_BASE_URL}/api/admin/shipping`, {
         credentials: 'include',
         headers: {
           ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
@@ -141,7 +141,7 @@ export default function ShippingsPage() {
       if (mapFile) fd.append('map_image', mapFile);
 
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const url = currentId ? `${API_BASE_URL}/api/shippings/${currentId}` : `${API_BASE_URL}/api/shippings`;
+      const url = currentId ? `${API_BASE_URL}/api/admin/shipping/${currentId}` : `${API_BASE_URL}/api/admin/shipping`;
       const method = currentId ? 'POST' : 'POST';
       const headers: Record<string,string> = { 'Accept': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) };
       if (currentId) headers['X-HTTP-Method-Override'] = 'PUT';

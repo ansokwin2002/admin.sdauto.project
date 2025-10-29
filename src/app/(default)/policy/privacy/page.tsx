@@ -38,7 +38,7 @@ export default function PrivacyPolicyPage() {
     NProgress.start();
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const res = await fetch(`${API_BASE_URL}/api/policies`, {
+      const res = await fetch(`${API_BASE_URL}/api/admin/policies`, {
         headers: {
           'Accept': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
@@ -98,7 +98,7 @@ export default function PrivacyPolicyPage() {
       };
 
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const url = currentId ? `${API_BASE_URL}/api/policies/${currentId}` : `${API_BASE_URL}/api/policies`;
+      const url = currentId ? `${API_BASE_URL}/api/admin/policies/${currentId}` : `${API_BASE_URL}/api/admin/policies`;
       const method = currentId ? 'PUT' : 'POST';
       
       const res = await fetch(url, {

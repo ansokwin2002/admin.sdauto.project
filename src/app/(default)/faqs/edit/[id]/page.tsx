@@ -33,7 +33,7 @@ export default function EditFaqPage({ params }: { params: Promise<{ id: string }
     NProgress.start();
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const res = await fetch(`${API_BASE_URL}/api/faqs/${faqId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/admin/faqs/${faqId}`, {
         headers: { 
           'Accept': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
@@ -86,7 +86,7 @@ export default function EditFaqPage({ params }: { params: Promise<{ id: string }
       };
 
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const res = await fetch(`${API_BASE_URL}/api/faqs/${faqId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/admin/faqs/${faqId}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',

@@ -52,7 +52,7 @@ export default function SlidersPage() {
       NProgress.start();
       setLoading(true);
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const res = await fetch(`${API_BASE_URL}/api/sliders`, {
+      const res = await fetch(`${API_BASE_URL}/api/admin/sliders`, {
         credentials: 'include',
         headers: {
           ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
@@ -107,7 +107,7 @@ export default function SlidersPage() {
       formData.append('image', file);
 
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const res = await fetch(`${API_BASE_URL}/api/sliders`, {
+      const res = await fetch(`${API_BASE_URL}/api/admin/sliders`, {
         method: 'POST',
         body: formData,
         credentials: 'include',
@@ -150,7 +150,7 @@ export default function SlidersPage() {
       setDeletingId(item.id);
       NProgress.start();
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const res = await fetch(`${API_BASE_URL}/api/sliders/${item.id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/admin/sliders/${item.id}`, {
         method: 'DELETE',
         credentials: 'include',
         headers: {
@@ -189,7 +189,7 @@ export default function SlidersPage() {
       const formData = new FormData();
       formData.append('ordering', value || '');
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const res = await fetch(`${API_BASE_URL}/api/sliders/${item.id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/admin/sliders/${item.id}`, {
         method: 'POST', // some servers accept POST+_method=PUT; otherwise use PUT with JSON
         headers: {
           'X-HTTP-Method-Override': 'PUT',
@@ -266,7 +266,7 @@ export default function SlidersPage() {
                     setCreatingFromUrl(true);
                     NProgress.start();
                     const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-                    const res = await fetch(`${API_BASE_URL}/api/sliders/url`, {
+                    const res = await fetch(`${API_BASE_URL}/api/admin/sliders/url`, {
                       method: 'POST',
                       headers: {
                         'Content-Type': 'application/json',
@@ -406,7 +406,7 @@ export default function SlidersPage() {
                 const fd = new FormData();
                 fd.append('image', editFile);
                 const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-                const res = await fetch(`${API_BASE_URL}/api/sliders/${editingItemId}`, {
+                const res = await fetch(`${API_BASE_URL}/api/admin/sliders/${editingItemId}`, {
                   method: 'POST',
                   headers: {
                     'X-HTTP-Method-Override': 'PUT',

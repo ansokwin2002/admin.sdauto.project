@@ -89,7 +89,7 @@ export default function HomeSettingsPage() {
     try {
       NProgress.start();
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const res = await fetch(`${API_BASE_URL}/api/home-settings`, {
+      const res = await fetch(`${API_BASE_URL}/api/admin/settings`, {
         headers: {
           ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
           'Accept': 'application/json',
@@ -134,13 +134,13 @@ export default function HomeSettingsPage() {
     NProgress.start();
     try {
       const payload = mapToApi(form);
-      const url = currentId ? `${API_BASE_URL}/api/home-settings/${currentId}` : `${API_BASE_URL}/api/home-settings`;
+      const url = currentId ? `${API_BASE_URL}/api/admin/settings/${currentId}` : `${API_BASE_URL}/api/admin/settings`;
       const method = currentId ? 'PUT' : 'POST';
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
       const res = await fetch(url, {
         method,
-        headers: { 
-          'Content-Type': 'application/json', 
+        headers: {
+          'Content-Type': 'application/json',
           'Accept': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         },

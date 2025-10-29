@@ -92,10 +92,8 @@ export default function ProductDetailModal({ open, onOpenChange, productId }: Pr
         setLoading(true);
         setError(null);
         try {
-          const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-          const response = await fetch(`${API_BASE_URL}/api/products/${productId}` , {
+          const response = await fetch(`${API_BASE_URL}/api/public/products/${productId}` , {
             headers: {
-              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
               'Accept': 'application/json',
             },
             credentials: 'include',

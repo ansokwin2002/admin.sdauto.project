@@ -221,10 +221,8 @@ export default function ProductList({
         params.append('sort_order', sortConfig.direction);
       }
 
-      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const response = await fetch(`${API_BASE_URL}/api/products?${params.toString()}` , {
+      const response = await fetch(`${API_BASE_URL}/api/public/products?${params.toString()}` , {
         headers: {
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
           'Accept': 'application/json',
         },
         credentials: 'include',

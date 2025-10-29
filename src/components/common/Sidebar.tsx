@@ -288,9 +288,10 @@ export default function Sidebar({ width, onClose }: SidebarProps) {
       icon: <IconSettings />,
       link: "#",
       subMenu: [
-        { title: "Home Settings", link: "/home-settings" },
+        { title: "Home", link: "/home-settings" },
         { title: "Sliders", link: "/sliders" },
         { title: "Shippings", link: "/shippings" },
+        { title: "Delivery Partners", link: "/delivery-partners" },
         { title: "Policy", link: "#", subMenu: [
           { title: "Privacy", link: "/policy/privacy" },
           { title: "Warranty, Return, and Refund", link: "/policy/warranty-return-refund" },

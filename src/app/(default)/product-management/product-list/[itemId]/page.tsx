@@ -23,10 +23,8 @@ export default function EditMenuItemPage() {
 
       NProgress.start();
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-        const response = await fetch(`${API_BASE_URL}/api/products/${itemId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/public/products/${itemId}`, {
           headers: {
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
             'Accept': 'application/json',
           },
           credentials: 'include',

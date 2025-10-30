@@ -1,6 +1,7 @@
 import { Box, Button, Card, Flex, Grid, Text, TextField, Select, TextArea, RadioGroup, Dialog, IconButton } from '@radix-ui/themes';
 import { Save, X, Image as ImageIcon, Trash2, Upload, Link as LinkIcon } from 'lucide-react';
 import { Product } from '@/types/product';
+import { Brand } from '@/types/brand';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import { API_BASE_URL } from '@/utilities/constants';
@@ -85,7 +86,39 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
     description: selectedItem?.description || '',
     is_active: selectedItem?.is_active ?? true,
   });
+
+  // Brands state
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [brandsLoading, setBrandsLoading] = useState(false);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
+
+  // Fetch brands from API
+  const fetchBrands = async () => {
+    try {
+      setBrandsLoading(true);
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      const res = await fetch(`${API_BASE_URL}/api/admin/brands`, {
+        credentials: 'include',
+        headers: {
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to fetch brands');
+      }
+
+      const json = await res.json();
+      const data: Brand[] = json?.data || [];
+      setBrands(data);
+    } catch (e: any) {
+      console.error('Failed to load brands:', e);
+      toast.error('Failed to load brands');
+    } finally {
+      setBrandsLoading(false);
+    }
+  };
 
   const cleanedImages = useMemo(() => {
     return (selectedItem?.images || []).map(cleanImageUrl);
@@ -99,6 +132,7 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
   const [originalVideoUrls, setOriginalVideoUrls] = useState<string[]>([]);
   const [isVideoUrlModalOpen, setVideoUrlModalOpen] = useState(false);
   const [priceError, setPriceError] = useState<string | null>(null);
+  const [brandError, setBrandError] = useState<string | null>(null);
   const [isLightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
@@ -122,6 +156,11 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
   useEffect(() => {
     setImagePreviews(cleanedImages);
   }, [cleanedImages]);
+
+  // Fetch brands on component mount
+  useEffect(() => {
+    fetchBrands();
+  }, []);
 
   // Helper to get YouTube embed URL
   const getYouTubeEmbedUrl = (url: string) => {
@@ -176,6 +215,16 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Reset errors
+    setBrandError(null);
+
+    // Validate brand is required
+    if (!formData.brand?.trim() || formData.brand === 'no-brand') {
+      setBrandError('Please select a brand');
+      toast.error('Please select a brand');
+      return;
+    }
 
     if (priceError) {
       toast.error(priceError);
@@ -293,12 +342,31 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
                     />
                   </Flex>
                    <Flex direction="column" gap="1">
-                    <Text as="label" size="2" weight="medium">Brand</Text>
-                    <TextField.Root
-                      type="text"
-                      value={formData.brand}
-                      onChange={(e) => setFormData(prev => ({ ...prev, brand: e.target.value }))}
-                    />
+                    <Text as="label" size="2" weight="medium">Brand *</Text>
+                    <Select.Root
+                      value={formData.brand || 'no-brand'}
+                      onValueChange={(value) => {
+                        setFormData(prev => ({ ...prev, brand: value === 'no-brand' ? '' : value }));
+                        setBrandError(null); // Clear error when user selects a brand
+                      }}
+                      disabled={brandsLoading}
+                    >
+                      <Select.Trigger
+                        placeholder={brandsLoading ? "Loading brands..." : "Select Brand"}
+                        style={brandError ? { borderColor: 'red' } : {}}
+                      />
+                      <Select.Content>
+                        <Select.Item value="no-brand">Select Brand</Select.Item>
+                        {brands.map((brand) => (
+                          <Select.Item key={brand.id} value={brand.brand_name}>
+                            {brand.brand_name}
+                          </Select.Item>
+                        ))}
+                      </Select.Content>
+                    </Select.Root>
+                    {brandError && (
+                      <Text size="1" color="red">{brandError}</Text>
+                    )}
                   </Flex>
                 </Grid>
                  <Grid columns={{ initial: '1', sm: '2' }} gap="4" mt="3">

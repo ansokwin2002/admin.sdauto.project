@@ -221,17 +221,75 @@ export default function ProductList({
         params.append('sort_order', sortConfig.direction);
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/public/products?${params.toString()}` , {
-        headers: {
-          'Accept': 'application/json',
-        },
-        credentials: 'include',
-      });
+      let response;
+      let apiUrl;
+
+      // Try a direct database query endpoint as a workaround
+      try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+        apiUrl = `${API_BASE_URL}/api/admin/products/raw?${params.toString()}`;
+        console.log('Trying raw endpoint:', apiUrl);
+
+        response = await fetch(apiUrl, {
+          headers: {
+            'Accept': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          },
+          credentials: 'include',
+        });
+
+        if (!response.ok && response.status === 404) {
+          throw new Error('Raw endpoint not found, trying regular endpoints');
+        }
+      } catch (rawError) {
+        console.log('Raw endpoint failed, trying public endpoint...');
+
+        // Try public endpoint
+        try {
+          apiUrl = `${API_BASE_URL}/api/public/products?${params.toString()}`;
+          console.log('Trying public endpoint:', apiUrl);
+
+          response = await fetch(apiUrl, {
+            headers: {
+              'Accept': 'application/json',
+            },
+            credentials: 'include',
+          });
+
+          if (!response.ok && response.status === 404) {
+            throw new Error('Public endpoint not found');
+          }
+        } catch (publicError) {
+          console.log('Public endpoint failed, trying admin endpoint...');
+
+          // Fallback to admin endpoint with authentication
+          const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+          apiUrl = `${API_BASE_URL}/api/admin/products?${params.toString()}`;
+          console.log('Trying admin endpoint:', apiUrl);
+
+          response = await fetch(apiUrl, {
+            headers: {
+              'Accept': 'application/json',
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            },
+            credentials: 'include',
+          });
+        }
+      }
+
+      console.log('Final response status:', response.status);
+
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+
         if (response.status === 401) {
           throw new Error('Unauthorized. Please login again.');
         }
-        throw new Error('Failed to fetch products');
+        if (response.status === 500 && errorText.includes('ProductResource')) {
+          throw new Error('Backend ProductResource error. Please fix the ProductResource.php file at line 18. The error suggests a relationship issue where a string is being treated as an object.');
+        }
+        throw new Error(`Failed to fetch products (${response.status}): ${errorText}`);
       }
       
       const data: PaginatedProductsResponse = await response.json();
@@ -315,7 +373,7 @@ export default function ProductList({
         setDeletingSingle(true);
         NProgress.start();
         const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-        const response = await fetch(`${API_BASE_URL}/api/products/${itemToDelete.id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/admin/products/${itemToDelete.id}`, {
           method: 'DELETE',
           headers: {
             ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
@@ -324,10 +382,20 @@ export default function ProductList({
           credentials: 'include',
         });
         if (!response.ok) {
-          throw new Error('Failed to delete product');
+          const errorText = await response.text();
+          let errorMessage = 'Failed to delete product';
+          try {
+            const errorJson = JSON.parse(errorText);
+            errorMessage = errorJson.message || errorMessage;
+          } catch {
+            // If not JSON, use the text as is
+            errorMessage = errorText || errorMessage;
+          }
+          throw new Error(errorMessage);
         }
         toast.success('Product deleted successfully!');
       } catch (error) {
+        console.error('Delete error:', error);
         toast.error(error instanceof Error ? error.message : 'An unknown error occurred');
       } finally {
         setDeletingSingle(false);
@@ -355,7 +423,7 @@ export default function ProductList({
         setDeletingBulk(true);
         NProgress.start();
         const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-        const response = await fetch(`${API_BASE_URL}/api/products/bulk`, {
+        const response = await fetch(`${API_BASE_URL}/api/admin/products/bulk`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

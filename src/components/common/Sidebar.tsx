@@ -280,6 +280,7 @@ export default function Sidebar({ width, onClose }: SidebarProps) {
       link: "#",
       subMenu: [
         { title: "Product List", link: "/product-management/product-list" },
+        { title: "Brands", link: "/product-management/brands" },
         { title: "Categories", link: "/product-management/categories" },
       ],
     },

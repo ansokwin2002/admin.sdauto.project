@@ -23,12 +23,34 @@ export default function EditMenuItemPage() {
 
       NProgress.start();
       try {
-        const response = await fetch(`${API_BASE_URL}/api/public/products/${itemId}`, {
-          headers: {
-            'Accept': 'application/json',
-          },
-          credentials: 'include',
-        });
+        let response;
+
+        // Try public endpoint first
+        try {
+          response = await fetch(`${API_BASE_URL}/api/public/products/${itemId}`, {
+            headers: {
+              'Accept': 'application/json',
+            },
+            credentials: 'include',
+          });
+
+          if (!response.ok && response.status === 404) {
+            throw new Error('Public endpoint not found');
+          }
+        } catch (publicError) {
+          console.log('Public endpoint failed, trying admin endpoint...');
+
+          // Fallback to admin endpoint with authentication
+          const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+          response = await fetch(`${API_BASE_URL}/api/admin/products/${itemId}`, {
+            headers: {
+              'Accept': 'application/json',
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            },
+            credentials: 'include',
+          });
+        }
+
         if (!response.ok) {
           if (response.status === 401) {
             throw new Error('Unauthorized. Please login again.');
@@ -143,7 +165,7 @@ export default function EditMenuItemPage() {
     setIsDeleting(true);
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const response = await fetch(`${API_BASE_URL}/api/products/${itemId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/products/${itemId}`, {
         method: 'DELETE',
         headers: {
           ...(token ? { 'Authorization': `Bearer ${token}` } : {}),

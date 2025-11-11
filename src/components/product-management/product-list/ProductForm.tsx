@@ -12,14 +12,24 @@ import "yet-another-react-lightbox/styles.css";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 
 const cleanImageUrl = (url: string): string => {
-  if (typeof url !== 'string' || !url.includes('/storage/products/')) {
+  if (typeof url !== 'string' || !url) {
     return url;
   }
+
+  // If the URL is already an absolute URL, return it as is.
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+
+  // If it's a relative path that needs the API_BASE_URL
   const storageMarker = '/storage/products/';
-  const parts = url.split(storageMarker);
-  const lastPart = parts[parts.length - 1];
+  if (url.includes(storageMarker)) {
+    const parts = url.split(storageMarker);
+    const lastPart = parts[parts.length - 1];
+    return `${API_BASE_URL}${storageMarker}${lastPart}`;
+  }
   
-  return `${API_BASE_URL}${storageMarker}${lastPart}`;
+  return url;
 };
 
 const getAbsoluteImageUrl = (relativePath: string) => {

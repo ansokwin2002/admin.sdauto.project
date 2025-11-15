@@ -300,6 +300,7 @@ export default function Sidebar({ width, onClose }: SidebarProps) {
           { title: "Order Cancellation", link: "/policy/order-cancellation" },
         ]},
         { title: "FAQs", link: "/faqs" },
+        { title: "Contact", link: "/contact" },
       ],
     },
 

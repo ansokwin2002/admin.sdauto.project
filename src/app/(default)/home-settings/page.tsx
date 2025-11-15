@@ -191,21 +191,7 @@ export default function HomeSettingsPage() {
               <Box>
                 <Text as="div" size="3" weight="bold" mb="3">General</Text>
                 <Grid columns={{ initial: '1', sm: '2' }} gap="4">
-                  <Flex direction="column" gap="1" className="sm:col-span-2">
-                    <Text as="label" size="2" weight="medium">Address</Text>
-                    <TextArea value={form.address} onChange={(e) => handleChange('address', e.target.value)} rows={3} />
-                    {errors.address && errors.address.map((m,i)=>(<Text key={i} size="1" color="red">{m}</Text>))}
-                  </Flex>
-                  <Flex direction="column" gap="1">
-                    <Text as="label" size="2" weight="medium">Email</Text>
-                    <TextField.Root type="email" value={form.email} onChange={(e) => handleChange('email', e.target.value)} />
-                    {errors.email && errors.email.map((m,i)=>(<Text key={i} size="1" color="red">{m}</Text>))}
-                  </Flex>
-                  <Flex direction="column" gap="1">
-                    <Text as="label" size="2" weight="medium">Phone</Text>
-                    <TextField.Root value={form.phone} onChange={(e) => handleChange('phone', e.target.value)} />
-                    {errors.phone && errors.phone.map((m,i)=>(<Text key={i} size="1" color="red">{m}</Text>))}
-                  </Flex>
+
                   <Flex direction="column" gap="1">
                     <Text as="label" size="2" weight="medium">Logo URL</Text>
                     <TextField.Root value={form.logo} onChange={(e) => handleChange('logo', e.target.value)} />

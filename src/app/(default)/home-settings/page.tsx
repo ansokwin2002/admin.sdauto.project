@@ -28,6 +28,7 @@ export default function HomeSettingsPage() {
     why_choose_item_3_description: "We are here to help 24/7.",
     why_choose_item_4_title: "Secure Payments",
     why_choose_item_4_description: "Your data and payments are safe with us.",
+    footer_home: "",
   };
 
   const [form, setForm] = useState(mockData);
@@ -61,6 +62,7 @@ export default function HomeSettingsPage() {
     why_choose_description3: f.why_choose_item_3_description,
     why_choose_title4: f.why_choose_item_4_title,
     why_choose_description4: f.why_choose_item_4_description,
+    footer_home: f.footer_home,
   });
 
   const mapFromApi = (d: any) => ({
@@ -83,6 +85,7 @@ export default function HomeSettingsPage() {
     why_choose_item_3_description: d.why_choose_description3 || '',
     why_choose_item_4_title: d.why_choose_title4 || '',
     why_choose_item_4_description: d.why_choose_description4 || '',
+    footer_home: d.footer_home || '',
   });
 
   const fetchExisting = async () => {
@@ -295,6 +298,17 @@ export default function HomeSettingsPage() {
                     <Text as="label" size="2" weight="medium">Item 4 Description</Text>
                     <TextArea value={form.why_choose_item_4_description} onChange={(e) => handleChange('why_choose_item_4_description', e.target.value)} rows={3} />
                     {errors.why_choose_description4 && errors.why_choose_description4.map((m,i)=>(<Text key={i} size="1" color="red">{m}</Text>))}
+                  </Flex>
+                </Grid>
+              </Box>
+
+              {/* Footer Description */}
+              <Box>
+                <Grid columns={{ initial: '1', sm: '2' }} gap="4">
+                  <Flex direction="column" gap="1" className="sm:col-span-2">
+                    <Text as="label" size="2" weight="medium">Footer Description</Text>
+                    <TextArea value={form.footer_home} onChange={(e) => handleChange('footer_home', e.target.value)} rows={3} />
+                    {errors.footer_home && errors.footer_home.map((m,i)=>(<Text key={i} size="1" color="red">{m}</Text>))}
                   </Flex>
                 </Grid>
               </Box>

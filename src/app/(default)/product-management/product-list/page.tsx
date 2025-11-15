@@ -5,7 +5,6 @@ import { Box, Tabs, Flex, Button, Text } from '@radix-ui/themes';
 import { PlusIcon, LayoutDashboard, List } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FilterBranchProvider } from '@/contexts/FilterBranchContext';
-import { useAppOrganization } from '@/contexts/AppOrganizationContext';
 import ProductDashboard from '@/components/product-management/product-list/ProductDashboard';
 import ProductList from '@/components/product-management/product-list/ProductList';
 import { PageHeading } from '@/components/common/PageHeading';
@@ -50,7 +49,7 @@ function MenuContent() {
       setRefreshKey(prevKey => prevKey + 1);
       const params = new URLSearchParams(searchParams.toString());
       params.delete('refresh');
-      router.replace(`?${params.toString()}`, undefined, { shallow: true });
+      router.replace(`?${params.toString()}`);
     }
   }, [searchParams, router]);
 
@@ -58,7 +57,7 @@ function MenuContent() {
     setAddModalOpen(true);
   };
 
-  const handleProductAdd = async (product: Partial<Product> & { image_urls?: string[], images?: File[], videos?: string[] }) => {
+  const handleProductAdd = async (product: Partial<Product> & { image_urls?: string[]; uploaded_images?: File[]; videos?: string[] }) => {
     const formData = new FormData();
 
     formData.append('name', product.name || '');
@@ -80,8 +79,8 @@ function MenuContent() {
       });
     }
 
-    if (product.images) {
-      product.images.forEach((file, index) => {
+    if (product.uploaded_images) {
+      product.uploaded_images.forEach((file, index) => {
         formData.append(`images[${index}]`, file);
       });
     }

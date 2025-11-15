@@ -20,7 +20,7 @@ interface ContactItem {
 }
 
 export default function ContactPage() {
-  const [loading, setLoading] = useState(false);
+
   const [saving, setSaving] = useState(false);
   const [item, setItem] = useState<ContactItem | null>(null);
 
@@ -32,7 +32,6 @@ export default function ContactPage() {
 
   const loadData = async () => {
     try {
-      setLoading(true);
       NProgress.start();
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
       const res = await fetch(`${API_BASE_URL}/api/admin/contacts`, {
@@ -61,7 +60,6 @@ export default function ContactPage() {
     } catch (e: any) {
       toast.error(e.message || 'Failed to load contact');
     } finally {
-      setLoading(false);
       NProgress.done();
     }
   };

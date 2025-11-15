@@ -27,7 +27,7 @@ export default function AddProductModal({ open, onOpenChange, onProductAdd }: Ad
   };
 
   return (
-    <Dialog.Root open={open} onOpenChange={(v)=>{ if (!submitting) onOpenChange(v); }} modal={!isGalleryShowing}>
+    <Dialog.Root open={open} onOpenChange={(v)=>{ if (!submitting) onOpenChange(v); }}>
       <Dialog.Content style={{ maxWidth: 1200 }}>
         <Dialog.Title>Add New Product</Dialog.Title>
         <Dialog.Description size="2" mb="4">

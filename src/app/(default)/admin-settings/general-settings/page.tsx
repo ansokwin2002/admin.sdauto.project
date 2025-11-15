@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Box, Button, Card, Flex, Text, TextField, TextArea, Grid, Tabs } from "@radix-ui/themes";
 import { PageHeading } from "@/components/common/PageHeading";
 import { API_BASE_URL } from "@/utilities/constants";
@@ -61,40 +61,41 @@ export default function GeneralSettingsPage() {
     debug_mode: 'false',
   });
 
-  useEffect(() => {
-    const fetchSettings = async () => {
-      setFetching(true);
-      NProgress.start();
-      try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-        const res = await fetch(`${API_BASE_URL}/api/admin/settings`, {
-          headers: {
-            'Accept': 'application/json',
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-          },
-          credentials: 'include',
-        });
+  const fetchSettings = useCallback(async () => {
+    setFetching(true);
+    NProgress.start();
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      const res = await fetch(`${API_BASE_URL}/api/admin/settings`, {
+        headers: {
+          'Accept': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        credentials: 'include',
+      });
 
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}`);
-        }
-
-        const json = await res.json();
-        const settingsData = json?.data || [];
-        setSettings(settingsData);
-        
-        // Map settings to form state
-        mapSettingsToForm(settingsData);
-      } catch (e: any) {
-        toast.error(e.message || 'Failed to load settings');
-      } finally {
-        setFetching(false);
-        NProgress.done();
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
       }
-    };
 
-    fetchSettings();
+      const json = await res.json();
+      const settingsData = json?.data || [];
+      setSettings(settingsData);
+      
+      // Map settings to form state
+      mapSettingsToForm(settingsData);
+    } catch (e: any) {
+      toast.error(e.message || 'Failed to load settings');
+    } finally {
+      setFetching(false);
+      NProgress.done();
+    }
   }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchSettings();
+  }, [fetchSettings]);
 
   const mapSettingsToForm = (settingsData: Setting[]) => {
     const settingsMap = settingsData.reduce((acc, setting) => {

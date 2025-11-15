@@ -75,7 +75,7 @@ const getAbsoluteImageUrl = (relativePath: string) => {
 interface ProductFormProps {
   selectedItem: Partial<Product> | null;
   onBack: () => void;
-  onSubmit: (formData: Partial<Product> & { image_urls?: string[], images?: File[], videos?: string[], deleted_images?: string[] }) => void;
+  onSubmit: (formData: Partial<Product> & { image_urls?: string[]; uploaded_images?: File[]; videos?: string[]; deleted_images?: string[] }) => void;
   onLightboxChange?: (isOpen: boolean) => void;
   isSubmitting?: boolean;
   onDelete?: () => Promise<void> | void;
@@ -246,10 +246,11 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
     onSubmit({
       ...formData,
       image_urls: currentImageUrls,
-      images: imageFiles,
+      images: undefined, // keep Product.images typed as string[] from previews only
+      uploaded_images: imageFiles as any, // pass files in a separate field to avoid TS intersection with Product.images
       videos: originalVideoUrls,
       deleted_images: imagesToDelete,
-    });
+    } as any);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -410,7 +411,7 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
                       type="number"
                       step="0.01"
                       value={formData.original_price || ''}
-                      onChange={(e) => setFormData(prev => ({ ...prev, original_price: parseFloat(e.target.value) || 0 }))}
+                      onChange={(e) => setFormData(prev => ({ ...prev, original_price: e.target.value }))}
                     >
                       <TextField.Slot>$</TextField.Slot>
                     </TextField.Root>
@@ -421,7 +422,7 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
                       type="number"
                       step="0.01"
                       value={formData.price || ''}
-                      onChange={(e) => setFormData(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
+                      onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
                     >
                       <TextField.Slot>$</TextField.Slot>
                     </TextField.Root>
@@ -643,7 +644,6 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
         index={lightboxIndex}
         on={{ view: ({ index: currentIndex }) => setLightboxIndex(currentIndex) }}
         plugins={[Zoom]}
-        closeOnBackdropClick={false}
       />
 
       <Dialog.Root open={confirmOpen} onOpenChange={(v)=>{ if (!deleting) setConfirmOpen(v); }}>

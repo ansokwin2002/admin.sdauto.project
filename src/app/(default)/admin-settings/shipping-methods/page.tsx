@@ -115,7 +115,6 @@ export default function ShippingMethodsPage() {
       toast.success(json?.message || `Shipping method ${editingMethod ? 'updated' : 'created'} successfully`);
       resetForm();
       setDialogOpen(false);
-      setViewMode('list');
       await fetchShippingMethods();
     } catch (err: any) {
       toast.error(err?.message || 'Failed to save shipping method');

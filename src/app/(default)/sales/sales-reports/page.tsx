@@ -13,7 +13,15 @@ import {
 import DateRangeInput from '@/components/common/DateRangeInput';
 import { Range } from 'react-date-range';
 import { useFilterBranch, FilterBranchProvider } from '@/contexts/FilterBranchContext';
-import { menuItems, menuCategories } from '@/data/MenuData';
+import { menuItems } from '@/data/MenuData';
+const menuCategories = [
+  { id: 'starters', name: 'Starters' },
+  { id: 'appetizers', name: 'Appetizers' },
+  { id: 'sides', name: 'Sides' },
+  { id: 'main-course', name: 'Main Course' },
+  { id: 'desserts', name: 'Desserts' },
+  { id: 'beverages', name: 'Beverages' },
+];
 import { organization } from '@/data/CommonData';
 import { PageHeading } from '@/components/common/PageHeading';
 import { usePageTitle } from '@/hooks/usePageTitle'

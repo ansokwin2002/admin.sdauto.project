@@ -71,6 +71,49 @@ export default function EditFaqPage({ params }: { params: Promise<{ id: string }
     }
   }, [faqId, router]);
 
+  const handleSave = async () => {
+    if (!question.trim()) {
+      toast.error('Question is required');
+      return;
+    }
+    if (!answer.trim()) {
+      toast.error('Answer is required');
+      return;
+    }
+    try {
+      setSaving(true);
+      NProgress.start();
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      const res = await fetch(`${API_BASE_URL}/api/admin/faqs/${faqId}` , {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        credentials: 'include',
+        body: JSON.stringify({ question: question.trim(), answer: answer.trim() }),
+      });
+      const json = await res.json().catch(()=>null);
+      if (!res.ok) {
+        if (res.status === 422 && json?.errors) {
+          const messages = Object.values(json.errors).flat().join('\n');
+          toast.error(messages);
+        } else {
+          toast.error(json?.message || 'Failed to update FAQ');
+        }
+        return;
+      }
+      toast.success(json?.message || 'FAQ updated successfully');
+      router.push('/faqs?refresh=true');
+    } catch (e:any) {
+      toast.error(e.message || 'Update failed');
+    } finally {
+      setSaving(false);
+      NProgress.done();
+    }
+  };
+
   if (loading) {
     return (
       <Box className="w-full">

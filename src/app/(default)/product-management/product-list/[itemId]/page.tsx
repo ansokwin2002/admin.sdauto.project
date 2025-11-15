@@ -74,8 +74,9 @@ export default function EditMenuItemPage() {
   };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleSubmitForm = async (formData: Partial<Product> & { image_urls?: string[], images?: File[], videos?: string[], deleted_images?: string[] }) => {
+  const handleSubmitForm = async (formData: Partial<Product> & { image_urls?: string[]; uploaded_images?: File[]; videos?: string[]; deleted_images?: string[] }) => {
     NProgress.start();
     setIsSubmitting(true);
     try {
@@ -99,8 +100,8 @@ export default function EditMenuItemPage() {
         });
       }
 
-      if (formData.images) {
-        formData.images.forEach(file => {
+      if (formData.uploaded_images) {
+        formData.uploaded_images.forEach(file => {
           productFormData.append('images[]', file);
         });
       }

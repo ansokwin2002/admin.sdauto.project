@@ -85,7 +85,7 @@ export default function ProductList({
   const [deletingSingle, setDeletingSingle] = useState(false);
   const [deletingBulk, setDeletingBulk] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<Product | null>(null);
-  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
+  const [selectedProductIds, setSelectedProductIds] = useState<number[]>([]);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedProductForDetail, setSelectedProductForDetail] = useState<Product | null>(null);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ 
@@ -95,7 +95,7 @@ export default function ProductList({
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      const allIds = filteredProducts.map(item => item.id);
+      const allIds = filteredProducts.map(item => Number(item.id));
       setSelectedProductIds(allIds);
     } else {
       setSelectedProductIds([]);
@@ -465,7 +465,7 @@ export default function ProductList({
     setDeleteConfirmOpen(false);
   };
 
-  const handleSelectItem = (id: string, checked: boolean) => {
+  const handleSelectItem = (id: number, checked: boolean) => {
     setSelectedProductIds(prev =>
       checked ? [...prev, id] : prev.filter(productId => productId !== id)
     );
@@ -558,7 +558,7 @@ export default function ProductList({
           {/* Show search indicator if actively searching */}
           {debouncedSearchTerm !== searchTerm && searchTerm !== '' && (
             <Box className="py-2 px-4 bg-blue-50 dark:bg-blue-950 rounded-md border border-blue-200 dark:border-blue-800">
-              <Text size="2" color="blue">Searching for "{searchTerm}"...</Text>
+              <Text size="2" color="blue">Searching for &quot;{searchTerm}&quot;...</Text>
             </Box>
           )}
           
@@ -605,7 +605,7 @@ export default function ProductList({
                   <td className="rt-TableCell" onClick={(e) => e.stopPropagation()}>
                     <Checkbox
                       checked={selectedProductIds.includes(item.id)}
-                      onCheckedChange={(checked) => handleSelectItem(item.id, checked)}
+                      onCheckedChange={(checked) => handleSelectItem(item.id, checked === true)}
                     />
                   </td>
                   <td className="rt-TableCell">{item.id}</td>
@@ -709,7 +709,7 @@ export default function ProductList({
       <ProductDetailModal
         open={isDetailModalOpen}
         onOpenChange={setIsDetailModalOpen}
-        productId={selectedProductForDetail?.id || null}
+        productId={selectedProductForDetail ? String(selectedProductForDetail.id) : null}
       />
     </Box>
   );

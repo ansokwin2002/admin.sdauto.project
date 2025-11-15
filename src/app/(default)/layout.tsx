@@ -8,6 +8,7 @@ import { AppOrganizationProvider } from "@/contexts/AppOrganizationContext";
 import { Text } from "@radix-ui/themes";
 import ProgressBar from '@/components/common/ProgressBar';
 import { useRouter, usePathname } from "next/navigation";
+import { Suspense } from 'react';
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -61,7 +62,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   
   return (
     <AppOrganizationProvider>
-      <ProgressBar />
+      <Suspense fallback={null}>
+        <ProgressBar />
+      </Suspense>
       <Box className="flex flex-col h-screen overflow-x-hidden">
         {/* Backdrop for mobile */}
         {isSidebarOpen && (

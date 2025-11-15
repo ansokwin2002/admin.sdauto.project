@@ -474,7 +474,7 @@ export default function DeliveryPartnersPage() {
                     value={urlLink}
                     onChange={(e) => setUrlLink(e.target.value)}
                   />
-                  <Text size="1" color="gray" mt="1">Optional link to partner's website</Text>
+                  <Text size="1" color="gray" mt="1">Optional link to partner&apos;s website</Text>
                 </Box>
 
                 {createMode === 'file' ? (

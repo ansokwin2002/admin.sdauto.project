@@ -27,11 +27,7 @@ export default function OrderCancellationPolicyPage() {
   const [title, setTitle] = useState('Order Cancellation Policy');
   const [content, setContent] = useState('');
 
-  const getAbsoluteUrl = (url: string) => {
-    if (!url) return '';
-    if (url.startsWith('http')) return url;
-    return `${API_BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
-  };
+
 
   const fetchCurrent = async () => {
     setLoading(true);

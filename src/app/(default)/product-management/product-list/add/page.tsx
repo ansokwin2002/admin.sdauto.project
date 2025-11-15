@@ -21,7 +21,7 @@ export default function AddMenuItemPage() {
   };
 
   return (
-    <MenuForm
+    <ProductForm
       selectedItem={null}
       onBack={handleBackToList}
       onSubmit={handleSubmitForm}

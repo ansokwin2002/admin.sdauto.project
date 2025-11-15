@@ -338,11 +338,4 @@ export default function HomeSettingsPage() {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <Box>
-      <Text as="label" size="2" className="block mb-1 text-gray-600">{label}</Text>
-      {children}
-    </Box>
-  );
-}
+

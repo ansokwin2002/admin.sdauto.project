@@ -392,7 +392,7 @@ export default function BrandsPage() {
               <Box>
                 <Text weight="medium" size="3">Are you sure?</Text>
                 <Text size="2" color="gray" mt="1">
-                  This will permanently delete "{brandToDelete?.brand_name}" and cannot be undone.
+                  This will permanently delete &quot;{brandToDelete?.brand_name}&quot; and cannot be undone.
                 </Text>
                 {brandToDelete?.products_count && brandToDelete.products_count > 0 && (
                   <Text size="2" color="red" mt="1">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Box, Button, Card, Flex, Text, Table, IconButton, Dialog, TextField } from "@radix-ui/themes";
+import { Box, Button, Flex, Text, Table, IconButton, Dialog, TextField } from "@radix-ui/themes";
 import { PageHeading } from "@/components/common/PageHeading";
 import { API_BASE_URL } from "@/utilities/constants";
 import NProgress from "nprogress";

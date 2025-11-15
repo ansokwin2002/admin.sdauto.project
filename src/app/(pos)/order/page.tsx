@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Plus, Minus, Trash2, X, ChefHatIcon, ForkKnife, Sandwich, Cake, Coffee, Receipt, Send } from "lucide-react";
 import { Card, Box, Flex, Text, Button, IconButton, Heading, Grid, Dialog, Inset, ScrollArea, Badge, RadioCards, CheckboxCards, TextArea } from "@radix-ui/themes";
 import Image from "next/image";
@@ -84,7 +84,6 @@ export default function OrderPage() {
   
   const menuRef = useRef<HTMLDivElement>(null);
   const cartRef = useRef<HTMLDivElement>(null);
-  const animationIdRef = useRef<number>(0);
 
   const categories = [
     {

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Box, Button, Card, Flex, Grid, IconButton, Table, Text, TextField, Dialog, TextArea } from "@radix-ui/themes";
+import { useEffect, useRef, useState } from "react";
+import { Box, Button, Card, Flex, Grid, IconButton, Text, TextField, Dialog, TextArea } from "@radix-ui/themes";
 import { PageHeading } from "@/components/common/PageHeading";
 import { API_BASE_URL } from "@/utilities/constants";
 import NProgress from "nprogress";
@@ -144,9 +144,9 @@ export default function DeliveryPartnersPage() {
     }
     
     // Client-side validations
-    const allowedTypes = ['image/jpeg','image/jpg','image/png','image/webp','image/gif'];
+    const allowedTypes = ['image/jpeg','image/jpg','image/png','image/webp','image/gif','image/svg+xml'];
     if (!allowedTypes.includes(file.type)) {
-      toast.error('Please upload a valid image (jpg, jpeg, png, webp, gif)');
+      toast.error('Please upload a valid image (jpg, jpeg, png, webp, gif, svg)');
       return;
     }
     const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
@@ -350,12 +350,9 @@ export default function DeliveryPartnersPage() {
       
       const formData = new FormData();
       formData.append('title', editTitle.trim());
-      if (editDescription.trim()) {
-        formData.append('description', editDescription.trim());
-      }
-      if (editUrlLink.trim()) {
-        formData.append('url_link', editUrlLink.trim());
-      }
+      // Always include description and url_link so users can clear them
+      formData.append('description', editDescription.trim());
+      formData.append('url_link', editUrlLink.trim());
       if (editFile) {
         formData.append('image', editFile);
       }
@@ -490,7 +487,7 @@ export default function DeliveryPartnersPage() {
                       onChange={(e) => handleFileSelect(e.target.files?.[0] || null)}
                       className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-800 dark:file:text-gray-300 dark:hover:file:bg-gray-700"
                     />
-                    <Text size="1" color="gray" mt="1">Max 5MB • JPG, PNG, WebP, GIF</Text>
+                    <Text size="1" color="gray" mt="1">Max 5MB • JPG, PNG, WebP, GIF, SVG</Text>
 
                     {/* Image Preview */}
                     {filePreview && (
@@ -785,7 +782,7 @@ export default function DeliveryPartnersPage() {
               <Box>
                 <Text weight="medium" size="3">Are you sure?</Text>
                 <Text size="2" color="gray" mt="1">
-                  This will permanently delete "{itemPendingDelete?.title}" and cannot be undone.
+                  This will permanently delete &quot;{itemPendingDelete?.title}&quot; and cannot be undone.
                 </Text>
               </Box>
             </Flex>

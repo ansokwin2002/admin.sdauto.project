@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { Box, Tabs, Flex, Button, Text } from '@radix-ui/themes';
 import { PlusIcon, LayoutDashboard, List } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FilterBranchProvider, useFilterBranch } from '@/contexts/FilterBranchContext';
+import { FilterBranchProvider } from '@/contexts/FilterBranchContext';
 import { useAppOrganization } from '@/contexts/AppOrganizationContext';
 import ProductDashboard from '@/components/product-management/product-list/ProductDashboard';
 import ProductList from '@/components/product-management/product-list/ProductList';
@@ -33,8 +33,6 @@ function MenuContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
-  // const { activeBranchFilter, setActiveBranchFilter } = useFilterBranch();
-  const { activeEntity } = useAppOrganization();
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   

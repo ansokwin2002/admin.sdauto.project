@@ -28,101 +28,48 @@ export default function EditFaqPage({ params }: { params: Promise<{ id: string }
   const [answer, setAnswer] = useState('');
   const faqId = unwrappedParams.id;
 
-  const fetchFaq = async () => {
-    setLoading(true);
-    NProgress.start();
-    try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const res = await fetch(`${API_BASE_URL}/api/admin/faqs/${faqId}`, {
-        headers: { 
-          'Accept': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        },
-        credentials: 'include',
-      });
-      
-      if (!res.ok) {
-        if (res.status === 404) {
-          toast.error('FAQ not found');
-          router.push('/faqs');
-          return;
-        }
-        throw new Error(`HTTP ${res.status}`);
-      }
-      
-      const json = await res.json();
-      const faq: FaqItem = json?.data;
-      if (faq) {
-        setQuestion(faq.question || '');
-        setAnswer(faq.answer || '');
-      }
-    } catch (e: any) {
-      toast.error(e.message || 'Failed to load FAQ');
-      router.push('/faqs');
-    } finally {
-      setLoading(false);
-      NProgress.done();
-    }
-  };
-
-  const handleSave = async () => {
-    if (!question.trim()) {
-      toast.error('Question is required');
-      return;
-    }
-    
-    if (!answer.trim()) {
-      toast.error('Answer is required');
-      return;
-    }
-
-    try {
-      setSaving(true);
-      NProgress.start();
-      
-      const payload = {
-        question: question.trim(),
-        answer: answer.trim(),
-      };
-
-      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const res = await fetch(`${API_BASE_URL}/api/admin/faqs/${faqId}`, {
-        method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        },
-        credentials: 'include',
-        body: JSON.stringify(payload),
-      });
-
-      const json = await res.json();
-      if (!res.ok) {
-        if (res.status === 422 && json?.errors) {
-          const messages = Object.values(json.errors).flat().join('\n');
-          toast.error(messages);
-        } else {
-          toast.error(json?.message || 'Failed to update FAQ');
-        }
-        return;
-      }
-
-      toast.success(json?.message || 'FAQ updated successfully');
-      router.push('/faqs');
-    } catch (e: any) {
-      toast.error(e.message || 'Network error');
-    } finally {
-      setSaving(false);
-      NProgress.done();
-    }
-  };
-
   useEffect(() => {
+    const fetchFaq = async () => {
+      setLoading(true);
+      NProgress.start();
+      try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+        const res = await fetch(`${API_BASE_URL}/api/admin/faqs/${faqId}`, {
+          headers: { 
+            'Accept': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          },
+          credentials: 'include',
+        });
+        
+        if (!res.ok) {
+          if (res.status === 404) {
+            toast.error('FAQ not found');
+            router.push('/faqs');
+            return;
+          }
+          throw new Error(`HTTP ${res.status}`);
+        }
+        
+        const json = await res.json();
+        const faq: FaqItem = json?.data;
+        if (faq) {
+          setQuestion(faq.question || '');
+          setAnswer(faq.answer || '');
+        }
+      } catch (e: any) {
+        toast.error(e.message || 'Failed to load FAQ');
+        router.push('/faqs');
+      } finally {
+        setLoading(false);
+        NProgress.done();
+      }
+    };
+
     if (faqId) {
       fetchFaq();
     }
-  }, [faqId]);
+  }, [faqId, router]);
 
   if (loading) {
     return (

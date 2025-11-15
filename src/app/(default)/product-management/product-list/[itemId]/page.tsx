@@ -25,21 +25,20 @@ export default function EditMenuItemPage() {
       try {
         let response;
 
-        // Try public endpoint first
-        try {
-          response = await fetch(`${API_BASE_URL}/api/public/products/${itemId}`, {
-            headers: {
-              'Accept': 'application/json',
-            },
-            credentials: 'include',
-          });
-
-          if (!response.ok && response.status === 404) {
-            throw new Error('Public endpoint not found');
-          }
-        } catch (publicError) {
-          console.log('Public endpoint failed, trying admin endpoint...');
-
+                  // Try public endpoint first
+                  try {
+                    response = await fetch(`${API_BASE_URL}/api/public/products/${itemId}`, {
+                      headers: {
+                        'Accept': 'application/json',
+                      },
+                      credentials: 'include',
+                    });
+        
+                    if (!response.ok && response.status === 404) {
+                      throw new Error('Public endpoint not found');
+                    }
+                  } catch (error) {
+                    console.log('Public endpoint failed, trying admin endpoint...');
           // Fallback to admin endpoint with authentication
           const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
           response = await fetch(`${API_BASE_URL}/api/admin/products/${itemId}`, {
@@ -75,7 +74,6 @@ export default function EditMenuItemPage() {
   };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleSubmitForm = async (formData: Partial<Product> & { image_urls?: string[], images?: File[], videos?: string[], deleted_images?: string[] }) => {
     NProgress.start();

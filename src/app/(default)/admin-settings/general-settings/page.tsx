@@ -6,7 +6,7 @@ import { PageHeading } from "@/components/common/PageHeading";
 import { API_BASE_URL } from "@/utilities/constants";
 import NProgress from "nprogress";
 import { toast } from "sonner";
-import { Save, Loader2, Clock3, Settings, Globe, Mail, Phone } from "lucide-react";
+import { Save, Loader2, Clock3, Settings, Globe, Mail } from "lucide-react";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
 interface Setting {
@@ -61,36 +61,40 @@ export default function GeneralSettingsPage() {
     debug_mode: 'false',
   });
 
-  const fetchSettings = async () => {
-    setFetching(true);
-    NProgress.start();
-    try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const res = await fetch(`${API_BASE_URL}/api/admin/settings`, {
-        headers: {
-          'Accept': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        },
-        credentials: 'include',
-      });
+  useEffect(() => {
+    const fetchSettings = async () => {
+      setFetching(true);
+      NProgress.start();
+      try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+        const res = await fetch(`${API_BASE_URL}/api/admin/settings`, {
+          headers: {
+            'Accept': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          },
+          credentials: 'include',
+        });
 
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+
+        const json = await res.json();
+        const settingsData = json?.data || [];
+        setSettings(settingsData);
+        
+        // Map settings to form state
+        mapSettingsToForm(settingsData);
+      } catch (e: any) {
+        toast.error(e.message || 'Failed to load settings');
+      } finally {
+        setFetching(false);
+        NProgress.done();
       }
+    };
 
-      const json = await res.json();
-      const settingsData = json?.data || [];
-      setSettings(settingsData);
-      
-      // Map settings to form state
-      mapSettingsToForm(settingsData);
-    } catch (e: any) {
-      toast.error(e.message || 'Failed to load settings');
-    } finally {
-      setFetching(false);
-      NProgress.done();
-    }
-  };
+    fetchSettings();
+  }, []);
 
   const mapSettingsToForm = (settingsData: Setting[]) => {
     const settingsMap = settingsData.reduce((acc, setting) => {

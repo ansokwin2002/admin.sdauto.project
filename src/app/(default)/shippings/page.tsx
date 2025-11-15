@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Box, Button, Card, Flex, Grid, Text, TextField, TextArea } from "@radix-ui/themes";
 
 import { PageHeading } from "@/components/common/PageHeading";
@@ -23,6 +23,14 @@ interface ShippingItem {
   map_image?: string | null;
 }
 
+const getAbsoluteUrl = (relativePath?: string | null) => {
+  if (!relativePath) return '';
+  if (relativePath.startsWith('http')) return relativePath;
+  const cleaned = relativePath.startsWith('/') ? relativePath : `/${relativePath}`;
+  const base = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+  return `${base}${cleaned}`;
+};
+
 export default function ShippingsPage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -36,14 +44,6 @@ export default function ShippingsPage() {
   const [mapUrl, setMapUrl] = useState<string>('');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const getAbsoluteUrl = (relativePath?: string | null) => {
-    if (!relativePath) return '';
-    if (relativePath.startsWith('http')) return relativePath;
-    const cleaned = relativePath.startsWith('/') ? relativePath : `/${relativePath}`;
-    const base = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
-    return `${base}${cleaned}`;
-  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -68,7 +68,7 @@ export default function ShippingsPage() {
     };
   }, [previewUrl]);
 
-  const fetchCurrent = async () => {
+  const fetchCurrent = useCallback(async () => {
     try {
       NProgress.start();
       setLoading(true);
@@ -107,9 +107,11 @@ export default function ShippingsPage() {
       setLoading(false);
       NProgress.done();
     }
-  };
+  }, []);
 
-  useEffect(()=>{ fetchCurrent(); },[]);
+  useEffect(() => {
+    fetchCurrent();
+  }, [fetchCurrent]);
 
   const handleSave = async () => {
     if (!title.trim()) {

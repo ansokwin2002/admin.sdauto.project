@@ -6,7 +6,7 @@ import { PageHeading } from "@/components/common/PageHeading";
 import { API_BASE_URL } from "@/utilities/constants";
 import NProgress from "nprogress";
 import { toast } from "sonner";
-import { Save, Loader2, Plus, Edit, Eye, Truck } from "lucide-react";
+import { Save, Loader2, Plus, Edit, Truck } from "lucide-react";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
 interface ShippingMethod {
@@ -28,7 +28,7 @@ export default function ShippingMethodsPage() {
   const [saving, setSaving] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMethod, setEditingMethod] = useState<ShippingMethod | null>(null);
-  const [viewMode, setViewMode] = useState<'list' | 'form'>('list');
+
 
   // Form state
   const [formData, setFormData] = useState({

@@ -24,15 +24,6 @@ export interface MenuItem {
   branchPrices?: { [branchId: string]: number };
 }
 
-export const menuCategories = [
-  { id: 'main-course', name: 'Main Course' },
-  { id: 'starters', name: 'Starters' },
-  { id: 'desserts', name: 'Desserts' },
-  { id: 'appetizers', name: 'Appetizers' },
-  { id: 'beverages', name: 'Beverages' },
-  { id: 'sides', name: 'Sides' },
-];
-
 export const dietaryLabels = [
   { id: 'vegetarian', name: 'Vegetarian' },
   { id: 'vegan', name: 'Vegan' },

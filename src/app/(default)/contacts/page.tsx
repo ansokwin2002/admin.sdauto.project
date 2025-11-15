@@ -6,7 +6,7 @@ import { PageHeading } from "@/components/common/PageHeading";
 import { API_BASE_URL } from "@/utilities/constants";
 import NProgress from "nprogress";
 import { toast } from "sonner";
-import { Save, Loader2, Plus, Edit, Eye, Trash2, Mail, Phone, User, MessageSquare } from "lucide-react";
+import { Save, Loader2, Plus, Edit, Eye, Trash2, Mail, User, MessageSquare } from "lucide-react";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
 interface Contact {

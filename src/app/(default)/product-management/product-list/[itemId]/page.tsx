@@ -25,20 +25,20 @@ export default function EditMenuItemPage() {
       try {
         let response;
 
-                  // Try public endpoint first
-                  try {
-                    response = await fetch(`${API_BASE_URL}/api/public/products/${itemId}`, {
-                      headers: {
-                        'Accept': 'application/json',
-                      },
-                      credentials: 'include',
-                    });
-        
-                    if (!response.ok && response.status === 404) {
-                      throw new Error('Public endpoint not found');
-                    }
-                  } catch (error) {
-                    console.log('Public endpoint failed, trying admin endpoint...');
+        // Try public endpoint first
+        try {
+          response = await fetch(`${API_BASE_URL}/api/public/products/${itemId}`, {
+            headers: {
+              'Accept': 'application/json',
+            },
+            credentials: 'include',
+          });
+
+          if (!response.ok && response.status === 404) {
+            throw new Error('Public endpoint not found');
+          }
+        } catch (error) {
+          console.log('Public endpoint failed, trying admin endpoint...');
           // Fallback to admin endpoint with authentication
           const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
           response = await fetch(`${API_BASE_URL}/api/admin/products/${itemId}`, {
@@ -207,4 +207,4 @@ export default function EditMenuItemPage() {
       onDelete={handleDelete}
     />
   );
-} 
+}

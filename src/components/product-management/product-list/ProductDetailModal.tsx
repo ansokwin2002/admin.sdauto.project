@@ -6,37 +6,31 @@ import { Product } from '@/types/product';
 import { X, Tag, DollarSign, Package, CheckCircle, XCircle, Info, Scale } from 'lucide-react';
 import { API_BASE_URL } from '@/utilities/constants';
 
-const getAbsoluteImageUrl = (relativePath: string) => {
+const getAbsoluteImageUrl = (inputUrl: string): string => {
   const PLACEHOLDER_IMAGE_URL = 'https://via.placeholder.com/800x600?text=No+Image';
 
-  if (!relativePath || typeof relativePath !== 'string' || relativePath.trim() === '') {
+  if (!inputUrl || typeof inputUrl !== 'string' || inputUrl.trim() === '') {
     return PLACEHOLDER_IMAGE_URL;
   }
 
-  // Normalize the relativePath by removing any leading API_BASE_URL if it's already there
-  let cleanedPath = relativePath;
-  const apiBaseUrlWithStorage = `${API_BASE_URL}/storage/`;
-  if (cleanedPath.startsWith(apiBaseUrlWithStorage)) {
-    // Remove the duplicated API_BASE_URL/storage/ part
-    cleanedPath = cleanedPath.substring(apiBaseUrlWithStorage.length);
-  }
-  // Also handle if it just starts with API_BASE_URL
-  if (cleanedPath.startsWith(API_BASE_URL)) {
-    cleanedPath = cleanedPath.substring(API_BASE_URL.length);
+  // If the URL is already an absolute URL, return it as is.
+  if (inputUrl.startsWith('http://') || inputUrl.startsWith('https://') || inputUrl.startsWith('blob:') || inputUrl.startsWith('data:')) {
+    return inputUrl;
   }
 
-  // Ensure cleanedPath does not start with a slash if API_BASE_URL does not end with one
-  if (cleanedPath.startsWith('/') && !API_BASE_URL.endsWith('/')) {
-    cleanedPath = cleanedPath.substring(1);
-  }
-
+  // Otherwise, assume it's a relative path and try to resolve it using API_BASE_URL
   try {
     const baseUrl = new URL(API_BASE_URL);
-    const fullUrl = new URL(cleanedPath, baseUrl);
-    return fullUrl.toString();
+    // If inputUrl starts with '/', new URL(inputUrl, baseUrl) will resolve it as root-relative to baseUrl.
+    // Otherwise, it resolves relative to baseUrl's path.
+    return new URL(inputUrl, baseUrl).toString();
   } catch (e) {
-    console.error("Error constructing image URL for path:", relativePath, e);
-    return PLACEHOLDER_IMAGE_URL;
+    console.error("Error constructing image URL for path:", inputUrl, "with base:", API_BASE_URL, e);
+    // Fallback for malformed API_BASE_URL or inputUrl.
+    // Simple concatenation, ensuring no double slashes
+    const base = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+    const path = inputUrl.startsWith('/') ? inputUrl : `/${inputUrl}`;
+    return `${base}${path}`;
   }
 };
 import { useState, useEffect } from 'react';

@@ -21,55 +21,40 @@ const cleanImageUrl = (url: string): string => {
     return url;
   }
 
-  // If it's a relative path that needs the API_BASE_URL
-  const storageMarker = '/storage/products/';
-  if (url.includes(storageMarker)) {
-    const parts = url.split(storageMarker);
-    const lastPart = parts[parts.length - 1];
-    return `${API_BASE_URL}${storageMarker}${lastPart}`;
-  }
-  
-  return url;
-};
-
-const getAbsoluteImageUrl = (relativePath: string) => {
-  const PLACEHOLDER_IMAGE_URL = 'https://via.placeholder.com/100x100?text=No+Image';
-
-  if (!relativePath || typeof relativePath !== 'string' || relativePath.trim() === '') {
-    return PLACEHOLDER_IMAGE_URL;
-  }
-
-  // Priority 1: Check for valid absolute URLs that next/image can handle directly.
-  if (relativePath.startsWith('blob:') || relativePath.startsWith('data:') || relativePath.startsWith('http')) {
-    return relativePath;
-  }
-
-  // Priority 2: Fix for malformed URLs that might contain an absolute URL within the string
-  // (e.g., "storage/https://picsum.photos...")
-  const urlRegex = /(https?:\/\/[^\s]+)/;
-  const matches = relativePath.match(urlRegex);
-  if (matches) {
-    return matches[0];
-  }
-
-  // Priority 3: Handle relative paths from our own API.
-  let cleanedPath = relativePath;
-
-  // Specific fix for the observed malformed URL pattern:
-  // http://192.168.1.9:8000/storage/http://192.168.1.9:8000/storage/products/...
-  const malformedPrefix = `${API_BASE_URL}/storage/${API_BASE_URL}/storage/`;
-  if (cleanedPath.startsWith(malformedPrefix)) {
-    cleanedPath = cleanedPath.substring(malformedPrefix.length - (`${API_BASE_URL}/storage/`).length);
-  }
-
+  // If it's a path relative to the public storage, prepend API_BASE_URL
+  // Examples: "storage/products/image.jpg", "/storage/products/image.jpg", "products/image.jpg"
+  // This assumes API_BASE_URL is the base for such relative paths.
   try {
     const baseUrl = new URL(API_BASE_URL);
-    const fullUrl = new URL(cleanedPath, baseUrl);
-    return fullUrl.toString();
+    // If url starts with '/', new URL(url, baseUrl) will resolve it as root-relative to baseUrl.
+    // Otherwise, it resolves relative to baseUrl's path.
+    return new URL(url, baseUrl).toString();
   } catch (e) {
-    console.error("Error constructing image URL for path:", relativePath, e);
+    // Fallback for malformed API_BASE_URL or url
+    console.warn("Could not construct URL for:", url, "with base:", API_BASE_URL, e);
+    // Simple concatenation, ensuring no double slashes
+    const base = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+    const path = url.startsWith('/') ? url : `/${url}`;
+    return `${base}${path}`;
+  }
+};
+
+const getAbsoluteImageUrl = (inputUrl: string): string => {
+  const PLACEHOLDER_IMAGE_URL = 'https://via.placeholder.com/100x100?text=No+Image';
+
+  if (!inputUrl || typeof inputUrl !== 'string' || inputUrl.trim() === '') {
     return PLACEHOLDER_IMAGE_URL;
   }
+
+  // If it's already a valid absolute URL (including blob/data URLs), return it as is.
+  if (inputUrl.startsWith('blob:') || inputUrl.startsWith('data:') || inputUrl.startsWith('http://') || inputUrl.startsWith('https://')) {
+    return inputUrl;
+  }
+  
+  // If cleanImageUrl has done its job, it should already be absolute.
+  // If not, there might still be an issue with API_BASE_URL or input.
+  // In this case, use cleanImageUrl as a fallback to ensure absolute URL.
+  return cleanImageUrl(inputUrl);
 };
 
 interface ProductFormProps {

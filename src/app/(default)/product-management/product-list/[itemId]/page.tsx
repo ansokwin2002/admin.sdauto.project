@@ -122,7 +122,7 @@ export default function EditMenuItemPage() {
       }
 
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const response = await fetch(`${API_BASE_URL}/api/products/${itemId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/products/${itemId}`, {
         method: 'POST', // Use POST for FormData with PUT/PATCH method override
         headers: {
           'Accept': 'application/json',

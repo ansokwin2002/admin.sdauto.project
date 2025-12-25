@@ -75,9 +75,9 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
     category: selectedItem?.category || '',
     part_number: selectedItem?.part_number || '',
     condition: selectedItem?.condition || 'New',
-    quantity: selectedItem?.quantity || 0,
-    price: selectedItem?.price || '0',
-    original_price: selectedItem?.original_price || '0',
+    quantity: selectedItem?.quantity ?? '',
+    price: selectedItem?.price || '',
+    original_price: selectedItem?.original_price || '',
     description: selectedItem?.description || '',
     is_active: selectedItem?.is_active ?? true,
   });
@@ -128,6 +128,9 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
   const [isVideoUrlModalOpen, setVideoUrlModalOpen] = useState(false);
   const [priceError, setPriceError] = useState<string | null>(null);
   const [brandError, setBrandError] = useState<string | null>(null);
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [partNumberError, setPartNumberError] = useState<string | null>(null);
+  const [quantityError, setQuantityError] = useState<string | null>(null);
   const [isLightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
@@ -211,18 +214,55 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Reset errors
+    // Reset all errors
     setBrandError(null);
+    setNameError(null);
+    setPartNumberError(null);
+    setPriceError(null); // Reset existing price error
+    setQuantityError(null);
 
-    // Validate brand is required
-    if (!formData.brand?.trim() || formData.brand === 'no-brand') {
-      setBrandError('Please select a brand');
-      toast.error('Please select a brand');
-      return;
+    let hasError = false;
+
+    // Validate Name
+    if (!formData.name?.trim()) {
+      setNameError('Product name is required.');
+      hasError = true;
     }
 
-    if (priceError) {
-      toast.error(priceError);
+    // Validate Part Number
+    if (!formData.part_number?.trim()) {
+      setPartNumberError('Part number is required.');
+      hasError = true;
+    }
+
+    // Validate Quantity
+    if (formData.quantity === '' || isNaN(formData.quantity as number) || (formData.quantity as number) < 0) {
+      setQuantityError('Quantity is required and must be a non-negative number.');
+      hasError = true;
+    }
+
+    // Validate Price
+    const priceValue = parseFloat(formData.price as string);
+    if (isNaN(priceValue) || priceValue < 0) {
+      setPriceError('Price is required and must be a non-negative number.');
+      hasError = true;
+    }
+
+    // Existing Brand Validation
+    if (!formData.brand?.trim() || formData.brand === 'no-brand') {
+      setBrandError('Please select a brand');
+      hasError = true;
+    }
+
+    // Existing Price Comparison Validation
+    const originalPrice = parseFloat(formData.original_price as string);
+    if (!isNaN(originalPrice) && originalPrice > 0 && !isNaN(priceValue) && priceValue > originalPrice) {
+      setPriceError('The current price cannot be higher than the original price.');
+      hasError = true;
+    }
+
+    if (hasError) {
+      toast.error('Please correct the highlighted errors.');
       return;
     }
 
@@ -330,12 +370,16 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
               <Box>
                 <Grid columns={{ initial: '1', sm: '2' }} gap="4">
                   <Flex direction="column" gap="1">
-                    <Text as="label" size="2" weight="medium">Name</Text>
+                    <Text as="label" size="2" weight="medium">Name *</Text>
                     <TextField.Root
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                      style={nameError ? { borderColor: 'red' } : {}}
                     />
+                    {nameError && (
+                      <Text size="1" color="red">{nameError}</Text>
+                    )}
                   </Flex>
                    <Flex direction="column" gap="1">
                     <Text as="label" size="2" weight="medium">Brand *</Text>
@@ -367,12 +411,16 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
                 </Grid>
                  <Grid columns={{ initial: '1', sm: '2' }} gap="4" mt="3">
                   <Flex direction="column" gap="1">
-                    <Text as="label" size="2" weight="medium">Part Number</Text>
+                    <Text as="label" size="2" weight="medium">Part Number *</Text>
                     <TextField.Root
                       type="text"
                       value={formData.part_number}
                       onChange={(e) => setFormData(prev => ({ ...prev, part_number: e.target.value }))}
+                      style={partNumberError ? { borderColor: 'red' } : {}}
                     />
+                    {partNumberError && (
+                      <Text size="1" color="red">{partNumberError}</Text>
+                    )}
                   </Flex>
                   <Flex direction="column" gap="1">
                     <Text as="label" size="2" weight="medium">Condition</Text>
@@ -402,24 +450,35 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
                     </TextField.Root>
                   </Flex>
                   <Flex direction="column" gap="1">
-                    <Text as="label" size="2" weight="medium">Price</Text>
+                    <Text as="label" size="2" weight="medium">Price *</Text>
                     <TextField.Root
                       type="number"
                       step="0.01"
                       value={formData.price || ''}
                       onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                      style={priceError ? { borderColor: 'red' } : {}}
                     >
                       <TextField.Slot>$</TextField.Slot>
                     </TextField.Root>
                   </Flex>
                   {priceError && <Text size="1" color="red" className="col-span-2">{priceError}</Text>}
                   <Flex direction="column" gap="1">
-                    <Text as="label" size="2" weight="medium">Quantity</Text>
+                    <Text as="label" size="2" weight="medium">Quantity *</Text>
                     <TextField.Root
                       type="number"
-                      value={formData.quantity}
-                      onChange={(e) => setFormData(prev => ({ ...prev, quantity: parseInt(e.target.value) || 0 }))}
+                      value={formData.quantity ?? ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setFormData(prev => ({
+                          ...prev,
+                          quantity: val === '' ? '' : parseInt(val, 10)
+                        }));
+                      }}
+                      style={quantityError ? { borderColor: 'red' } : {}}
                     />
+                    {quantityError && (
+                      <Text size="1" color="red">{quantityError}</Text>
+                    )}
                   </Flex>
                 </Grid>
                 <Flex direction="column" gap="1" mt="3">

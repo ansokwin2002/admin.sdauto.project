@@ -75,7 +75,7 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
     category: selectedItem?.category || '',
     part_number: selectedItem?.part_number || '',
     condition: selectedItem?.condition || 'New',
-    quantity: selectedItem?.quantity ?? '',
+    quantity: selectedItem?.quantity ?? 0,
     price: selectedItem?.price || '',
     original_price: selectedItem?.original_price || '',
     description: selectedItem?.description || '',

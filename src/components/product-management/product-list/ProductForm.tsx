@@ -57,6 +57,28 @@ const getAbsoluteImageUrl = (inputUrl: string): string => {
   return cleanImageUrl(inputUrl);
 };
 
+const parseJsonArray = (jsonString: string | any[] | undefined | null): any[] => {
+  if (!jsonString) {
+    return [];
+  }
+  if (Array.isArray(jsonString)) {
+    return jsonString;
+  }
+  if (typeof jsonString === 'string') {
+    try {
+      const parsed = JSON.parse(jsonString);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+      return [];
+    } catch (e) {
+      console.error("Failed to parse JSON array string:", e);
+      return [];
+    }
+  }
+  return [];
+};
+
 interface ProductFormProps {
   selectedItem: Partial<Product> | null;
   onBack: () => void;
@@ -116,7 +138,8 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
   };
 
   const cleanedImages = useMemo(() => {
-    return (selectedItem?.images || []).map(cleanImageUrl);
+    const imageArray = parseJsonArray(selectedItem?.images);
+    return imageArray.map(cleanImageUrl);
   }, [selectedItem?.images]);
 
   const [imagePreviews, setImagePreviews] = useState<string[]>(cleanedImages);
@@ -173,19 +196,7 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
   // Populate video URLs from selectedItem
   useEffect(() => {
     if (selectedItem?.videos) {
-      let videosArray: string[] = [];
-      if (Array.isArray(selectedItem.videos)) {
-        videosArray = selectedItem.videos;
-      } else if (typeof selectedItem.videos === 'string') {
-        try {
-          const parsedVideos = JSON.parse(selectedItem.videos);
-          if (Array.isArray(parsedVideos)) {
-            videosArray = parsedVideos;
-          }
-        } catch (e) {
-          console.error("Failed to parse selectedItem.videos as JSON array:", e);
-        }
-      }
+      const videosArray = parseJsonArray(selectedItem.videos);
 
       // Convert video IDs to full YouTube URLs
       const fullUrls = videosArray

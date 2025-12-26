@@ -236,12 +236,14 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
     }
 
     // Validate Quantity
-    if (
-      formData.quantity === undefined ||
-      isNaN(formData.quantity) ||
-      formData.quantity < 0
-    ) {
-
+          if (
+            formData.quantity === undefined ||
+            isNaN(Number(formData.quantity)) ||
+            Number(formData.quantity) < 0
+          ) {
+            setQuantityError('Quantity is required and must be a non-negative number.');
+            hasError = true;
+          }
     // Validate Price
     const priceValue = parseFloat(formData.price as string);
     if (isNaN(priceValue) || priceValue < 0) {

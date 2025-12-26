@@ -474,7 +474,7 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
                         const val = e.target.value;
                         setFormData(prev => ({
                           ...prev,
-                          quantity: val === '' ? '' : parseInt(val, 10)
+                         quantity: val === '' ? 0 : parseInt(val, 10)
                         }));
                       }}
                       style={quantityError ? { borderColor: 'red' } : {}}

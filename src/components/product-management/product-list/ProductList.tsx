@@ -666,14 +666,14 @@ export default function ProductList({
               <Text size="3" color="gray">No products found matching your search criteria.</Text>
             </Box>
           ) : (
-            currentMeta && (
+            (Math.ceil(filteredProducts.length / itemsPerPage) > 1) && (
               <Pagination
                 currentPage={currentPage}
                 totalPages={Math.ceil(filteredProducts.length / itemsPerPage)}
                 itemsPerPage={itemsPerPage}
                 totalItems={filteredProducts.length}
-                startIndex={(currentPage - 1) * itemsPerPage + 1}
-                endIndex={Math.min(currentPage * itemsPerPage, filteredProducts.length)}
+                startIndex={(currentPage - 1) * itemsPerPage}
+                endIndex={Math.min(((currentPage - 1) * itemsPerPage) + itemsPerPage, filteredProducts.length)}
                 onPageChange={handlePageChange}
                 onItemsPerPageChange={handleItemsPerPageChange}
               />

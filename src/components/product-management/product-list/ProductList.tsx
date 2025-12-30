@@ -25,16 +25,7 @@ interface MenuListProps {
   refreshKey?: number;
 }
 
-const getAbsoluteImageUrl = (relativePath: string) => {
-  if (!relativePath) return ''; // Handle cases where relativePath might be empty or null
-  if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) {
-    return relativePath; // Already an absolute URL
-  }
-  // Ensure API_BASE_URL does not end with a slash and relativePath does not start with one
-  const cleanedBaseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
-  const cleanedRelativePath = relativePath.startsWith('/') ? relativePath.substring(1) : relativePath;
-  return `${cleanedBaseUrl}/${cleanedRelativePath}`;
-};
+
 
 // Helper to create a cache key for the current filter state
 const createApiCacheKey = (
@@ -613,7 +604,7 @@ export default function ProductList({
                     <Flex align="center" justify="center" className="w-8 h-8">
                       {item.primary_image && typeof item.primary_image === 'string' && item.primary_image !== '' ? (
                         <Image
-                          src={getAbsoluteImageUrl(item.primary_image)} 
+                          src={API_BASE_URL + '/' + item.primary_image} 
                           alt={item.name} 
                           width={32} 
                           height={32}

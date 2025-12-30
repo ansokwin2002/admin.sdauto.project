@@ -1,6 +1,5 @@
 import { Box, Button, Flex, Table, Text, Badge, TextField, Select, IconButton, Checkbox, Dialog } from '@radix-ui/themes';
 import { Search, AlertCircle, RefreshCcw, Utensils, Edit, Trash2 } from 'lucide-react';
-import Image from 'next/image';
 import Pagination from '@/components/common/Pagination';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import { SortableHeader } from '@/components/common/SortableHeader';
@@ -603,7 +602,7 @@ export default function ProductList({
                   <td className="rt-TableCell">
                     <Flex align="center" justify="center" className="w-8 h-8">
                       {item.primary_image && typeof item.primary_image === 'string' && item.primary_image !== '' ? (
-                        <Image
+                        <img
                           src={API_BASE_URL + '/' + item.primary_image} 
                           alt={item.name} 
                           width={32} 

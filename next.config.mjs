@@ -8,6 +8,11 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
+        hostname: 'api.sdauto.com.au',
+        pathname: '/storage/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'images.unsplash.com',
       },
       {
@@ -17,10 +22,6 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'picsum.photos',
-      },
-      {
-        protocol: 'http',
-        hostname: 'example.com',
       },
     ],
   },

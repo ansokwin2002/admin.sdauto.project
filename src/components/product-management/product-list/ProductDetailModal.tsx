@@ -1,7 +1,7 @@
 'use client';
 
 import { Dialog, Flex, Button, Text, Card, Grid, Box, Badge } from '@radix-ui/themes';
-import Image from 'next/image';
+
 import { Product } from '@/types/product';
 import { X, Tag, DollarSign, Package, CheckCircle, XCircle, Info, Scale } from 'lucide-react';
 import { API_BASE_URL } from '@/utilities/constants';
@@ -177,7 +177,7 @@ export default function ProductDetailModal({ open, onOpenChange, productId }: Pr
                         >
                           {product.images.map((img, index) => (
                             <SwiperSlide key={index}>
-                              <Image
+                              <img
                                 onClick={() => {
                                   setLightboxIndex(index);
                                   setLightboxOpen(true);

@@ -3,7 +3,7 @@ import { Save, X, Image as ImageIcon, Trash2, Upload, Link as LinkIcon } from 'l
 import { Product } from '@/types/product';
 import { Brand } from '@/types/brand';
 import { useState, useRef, useEffect, useMemo } from 'react';
-import Image from 'next/image';
+
 import { API_BASE_URL } from '@/utilities/constants';
 import NProgress from 'nprogress';
 import { toast } from 'sonner';
@@ -552,14 +552,13 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
                         }}
                         style={{ cursor: 'pointer' }}
                       >
-                        <Image 
-                          src={getAbsoluteImageUrl(image)} 
-                          alt={`Product image ${index + 1}`} 
-                          width={100}
-                          height={100}
-                          className="rounded object-cover w-full h-full"
-                        />
-                        <IconButton 
+                                                <img
+                                                  src={getAbsoluteImageUrl(image)}
+                                                  alt={`Product image ${index + 1}`}
+                                                  width={100}
+                                                  height={100}
+                                                  className="rounded object-cover w-full h-full"
+                                                />                        <IconButton 
                           type="button"
                           size="1" 
                           color="red" 

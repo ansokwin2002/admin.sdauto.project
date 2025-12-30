@@ -2,7 +2,7 @@ import { Box, Card, Grid, Table, Flex, Badge, Inset, Progress } from '@radix-ui/
 import { ChefHat, AlertCircle, Image as ImageIcon, CookingPot, CircleX, Utensils } from 'lucide-react';
 import MetricCard from '@/components/common/MetricCard';
 import { MenuItem } from '@/data/MenuData';
-import Image from 'next/image';
+
 import CardHeading from '@/components/common/CardHeading';
 
 interface MenuDashboardProps {
@@ -71,7 +71,7 @@ export default function ProductDashboard({ menuMetrics, bestSellingItems, menuIt
                   <Table.Cell>
                     <Flex align="center" gap="2">
                       {item.image ? (
-                        <Image
+                        <img
                           src={item.image}
                           alt={item.name}
                           width={32}
@@ -114,7 +114,7 @@ export default function ProductDashboard({ menuMetrics, bestSellingItems, menuIt
                 <Table.Cell>
                   <Flex align="center" gap="2">
                     {item.imageUrl ? (
-                      <Image
+                      <img
                         src={item.imageUrl}
                         alt={item.name}
                         width={32}

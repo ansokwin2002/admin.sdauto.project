@@ -46,14 +46,40 @@ import "yet-another-react-lightbox/styles.css";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import "yet-another-react-lightbox/plugins/captions.css";
 
-// Helper to get YouTube embed URL
-const getYouTubeEmbedUrl = (url: string) => {
+const getYouTubeEmbedUrl = (urlOrId: string) => {
+  if (!urlOrId) return null;
+
+  // Check if it's a video ID (a common format is 11 characters)
+  if (!urlOrId.startsWith('http') && urlOrId.length === 11) {
+    return `https://www.youtube.com/embed/${urlOrId}`;
+  }
+
+  // Existing regex for full URLs
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-  const match = url.match(regExp);
+  const match = urlOrId.match(regExp);
   if (match && match[2].length === 11) {
     return `https://www.youtube.com/embed/${match[2]}`;
   }
   return null;
+};
+
+const parseJsonArray = (jsonString: string | any[] | undefined | null): any[] => {
+  if (!jsonString) {
+    return [];
+  }
+  if (Array.isArray(jsonString)) {
+    return jsonString;
+  }
+  if (typeof jsonString === 'string') {
+    try {
+      const parsed = JSON.parse(jsonString);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      console.error("Failed to parse JSON array string:", e);
+      return [];
+    }
+  }
+  return [];
 };
 
 interface ProductDetailModalProps {
@@ -217,8 +243,8 @@ export default function ProductDetailModal({ open, onOpenChange, productId }: Pr
                           <Text size="4" weight="bold">Videos</Text>
                         </Flex>
                         <Grid columns={{ initial: '1', sm: '2' }} gap="3">
-                          {product.videos.map((videoUrl, index) => {
-                            const embedUrl = getYouTubeEmbedUrl(videoUrl);
+                          {parseJsonArray(product.videos).map((videoIdentifier, index) => {
+                            const embedUrl = getYouTubeEmbedUrl(videoIdentifier);
                             return embedUrl ? (
                               <Box key={index} className="relative aspect-video">
                                 <iframe

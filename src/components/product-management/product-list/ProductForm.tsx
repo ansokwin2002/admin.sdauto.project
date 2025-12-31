@@ -99,7 +99,9 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
     condition: selectedItem?.condition || 'New',
     quantity: selectedItem?.quantity ?? 0,
     price: selectedItem?.price || '',
-    original_price: selectedItem?.original_price || '',
+    original_price: (selectedItem?.original_price === 0 || selectedItem?.original_price === '0' || selectedItem?.original_price === '0.00')
+                  ? ''
+                  : selectedItem?.original_price || '',
     description: selectedItem?.description || '',
     is_active: selectedItem?.is_active ?? true,
   });
@@ -218,9 +220,7 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
     }
   }, [selectedItem]);
 
-  const videoPreviews = useMemo(() => {
-    return originalVideoUrls.map(url => getYouTubeEmbedUrl(url)).filter(Boolean) as string[];
-  }, [originalVideoUrls]);
+  const videoPreviews = originalVideoUrls.map(url => getYouTubeEmbedUrl(url)).filter(Boolean) as string[];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -241,11 +241,7 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
       hasError = true;
     }
 
-    // Validate Part Number
-    if (!formData.part_number?.trim()) {
-      setPartNumberError('Part number is required.');
-      hasError = true;
-    }
+
 
     // Validate Quantity
           if (
@@ -426,7 +422,7 @@ export default function ProductForm({ selectedItem, onBack, onSubmit, onLightbox
                 </Grid>
                  <Grid columns={{ initial: '1', sm: '2' }} gap="4" mt="3">
                   <Flex direction="column" gap="1">
-                    <Text as="label" size="2" weight="medium">Part Number *</Text>
+                    <Text as="label" size="2" weight="medium">Part Number</Text>
                     <TextField.Root
                       type="text"
                       value={formData.part_number}

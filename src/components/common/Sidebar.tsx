@@ -270,7 +270,7 @@ export default function Sidebar({ width, onClose }: SidebarProps) {
 
   const applicationMenuData: MenuItem[] = useMemo(() => [
     {
-      title: "Dashboard Test",
+      title: "Dashboard",
       icon: <IconDashboard />,
       link: "/dashboard",
     },
